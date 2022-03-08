@@ -4,15 +4,15 @@ INF01151 – SISTEMAS OPERACIONAIS II N
 
 ## Compiling source code
 
-###1º Create the build directory
+### 1º Create the build directory
 ```bash 
 mkdir build
 ```
-###2º execute cmake
+### 2º execute cmake
 ```bash 
 cmake -S . -B build
 ```
-###3º Compile the generated Makefile
+### 3º Compile the generated Makefile
 ```bash 
 make -C build
 ```
