@@ -31,7 +31,7 @@ int main(int argc, char * argv[])
         Server server(argsParser.getPort());
         server.start();
     } else if ( argsParser.isClient() ) {
-        Client client(argsParser.getClientID(), argsParser.getPort());
+        Client client(argsParser.getClientID(), "localhost", argsParser.getPort());
         client.start();
     }
 

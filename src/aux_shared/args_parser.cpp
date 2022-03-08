@@ -17,7 +17,7 @@ char *ArgsParser::getArgsOptionValue(const char *option) {
         return value;
     }
 
-    logger.message(ERROR, "ARGS [%s] inexistente", option);
+    logger.message(INFO, "ARGS [%s] not found.", option);
 
     return 0;
 }

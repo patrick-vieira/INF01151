@@ -13,10 +13,12 @@ class Client
     Logger logger;
 
     int port;
+    char * host;
+
     char * user;
 
     public:
-        Client(char * user, int port);
+        Client(char * user, char* host, int port);
         int start();
 
 };

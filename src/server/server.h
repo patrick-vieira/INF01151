@@ -15,7 +15,8 @@ class Server
 
     public:
         Server(int port);
-        int start();
+
+    [[noreturn]] int start();
 
 };
 
