@@ -31,7 +31,7 @@ class ArgsParser {
 
     bool isClient();
 
-    int getClientID();
+    char* getClientID();
 };
 
 

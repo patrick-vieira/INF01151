@@ -16,8 +16,10 @@ char *ArgsParser::getArgsOptionValue(const char *option) {
         logger.message(DEBUG, "argv[%s] = %s", it->data(), value);
         return value;
     }
+
     logger.message(ERROR, "ARGS [%s] inexistente", option);
-    exit(99);
+
+    return 0;
 }
 
 bool ArgsParser::getArgsOptionPresent(const std::string &option) {
@@ -91,11 +93,11 @@ bool ArgsParser::isClient() {
     return false;
 }
 
-int ArgsParser::getClientID() {
-    char * client_id = this->getArgsOptionValue("-id");
+char * ArgsParser::getClientID() {
+    char * client_id = this->getArgsOptionValue("-u");
 
     if (client_id)
-        return std::stoi(client_id);
+        return client_id;
 
     return 0;
 }
