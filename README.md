@@ -21,7 +21,16 @@ make -C build
 ```bash 
 ./build/INF01151 -s
 ```
-## Running the client
+## Running one client
 ```bash 
 ./build/INF01151 -c -u a_user_name
+```
+
+### Optional Arguments
+#### Server and Client can run in a specific port using the args -p \<port number\>
+#### eg:
+```bash
+./build/INF01151 -s -p 1151 
+./build/INF01151 -c -u user_a -p 1151
+./build/INF01151 -c -u user_b -p 1151
 ```
