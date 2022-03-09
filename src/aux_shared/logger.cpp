@@ -20,10 +20,10 @@ void Logger::message(int level, string message, ...) {
     if(current_level >= level) {
 
         switch (level) {
-            case DEBUG: message = "DEBUG: " + message; break;
-            case INFO:  message = "INFO: " + message; break;
-            case ERROR: message = "ERROR: " + message; break;
-            default: message = "????: " + message; break;
+            case DEBUG: message = "\nDEBUG: " + message; break;
+            case INFO:  message = "\nINFO: " + message; break;
+            case ERROR: message = "\nERROR: " + message; break;
+            default: message = "\n????: " + message; break;
         }
 
         va_list argptr;

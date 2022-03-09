@@ -2,14 +2,13 @@
 // Created by vieir on 08/03/2022.
 //
 
-#include "user_menu.h"
+#include "user_gui.h"
 
 string UserGUI::getstring(WINDOW* window)
 {
     std::string input;
 
     // let the terminal do the line editing
-    nocbreak();
     echo();
 
     // this reads from buffer after <ENTER>, not "raw"
@@ -19,10 +18,11 @@ string UserGUI::getstring(WINDOW* window)
     while ( ch != '\n' )
     {
         input.push_back( ch );
-        ch = getch();
+        ch = wgetch(window);
     }
 
     // restore your cbreak / echo settings here
+    noecho();
 
     return input;
 }
@@ -148,7 +148,7 @@ void UserGUI::start() {
     cbreak();
 
     // screen size
-    int yMax, xMax;
+    //int yMax, xMax;
     getmaxyx(stdscr, yMax, xMax);
 
     // create window main
@@ -160,6 +160,11 @@ void UserGUI::start() {
     // create window menu
     this->createMenuWindow(yMax, xMax);
 
+}
+
+void UserGUI::stop() {
+    getch();
+    endwin();
 }
 
 void UserGUI::createMainWindow(int yMax, int xMax) {
@@ -203,15 +208,12 @@ void UserGUI::createMenuWindow(int yMax, int xMax) {
 }
 
 
-void UserGUI::stop() {
-    getch();
-    endwin();
-}
-
 int UserGUI::select_menu() {
+    // create window menu
+    this->createMenuWindow(yMax, xMax);
+
     bool selecting_menu = true;
 
-    int choice;
 
     while (selecting_menu) {
         // print menu
@@ -223,7 +225,7 @@ int UserGUI::select_menu() {
             wattroff(this->menu_win, A_REVERSE);  // highligh off
         }
 
-        choice = wgetch(this->menu_win);
+        int choice = wgetch(this->menu_win);
 
         switch (choice) {
             case KEY_UP:
@@ -236,7 +238,6 @@ int UserGUI::select_menu() {
                 break;
             case 10:   // 10 is the enter key
                 selecting_menu = false;
-                choice = -1;
                 break;
             default:
                 break;
@@ -261,7 +262,11 @@ string UserGUI::request_user_input(string message) {
 }
 
 void UserGUI::main_window_add_line(string new_line) {
+
     this->main_win_content.push_back(new_line);
+    if(this->main_win_content.size() > this->main_win_lines)
+        this->main_win_content.pop_back();
+
     this->refresh_main_window();
 }
 

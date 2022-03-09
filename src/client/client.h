@@ -16,12 +16,24 @@ class Client
 
     int port;
     string host;
-
     string user;
+
+    string menu_choices[3] = {"Write message", "Follow user", "Exit"};
+
 
 public:
     Client(string user, string host, int port);
     int start();
+
+    string getUser() {
+        return user;
+    }
+    string getHost() {
+        return host;
+    }
+    int getPort() {
+        return port;
+    }
 
 private:
     /** validateUser()

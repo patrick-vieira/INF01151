@@ -34,3 +34,11 @@ make -C build
 ./build/INF01151 -c -u user_a -p 1151
 ./build/INF01151 -c -u user_b -p 1151
 ```
+
+## Debuging with gbd and Clion
+### run the GDB server
+```bash
+gdbserver localhost:1234 ./INF01151_TF -c -u patrick -d
+```
+### On Clion Attach to it
+![img.png](clion_debug_config.png)

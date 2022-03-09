@@ -8,7 +8,7 @@
 #include <cstring>
 #include <unistd.h>
 #include "client.h"
-#include "user_menu/user_menu.h"
+#include "user_gui/user_gui.h"
 
 Client::Client(string user, string host, int port) {
     this->user = user;
@@ -19,10 +19,36 @@ Client::Client(string user, string host, int port) {
 int Client::start() {
     logger.message(INFO, "---> Client user:@%s starting on host: [%s] port: [%d]  <---", this->user.c_str(), this->host.c_str(), this->port);
 
-    UserMenu menu;
+    UserGUI gui(this, this->menu_choices);
 
-    menu.start(user, host, port);
+    gui.start();
 
+    int selected = gui.select_menu();
+
+    while (this->menu_choices[selected] != "Exit") {
+        switch (selected) {
+            case 0: {     // Send Message
+                string user_input_message = "Say something: ";
+                string response = gui.request_user_input(user_input_message);
+                //TODO send to server;
+                gui.main_window_add_line("Server response [Message]: " + response);
+                break;
+            }
+            case 1: {     // Follow User
+                string message = "User name to follow: ";
+                string response = gui.request_user_input(message);
+                //TODO send to server;
+                gui.main_window_add_line("Server response [Follow]: " + response);
+                break;
+            }
+            default:
+                break;
+
+        }
+        selected = gui.select_menu();
+    }
+
+    gui.stop();
     return 0;
 }
 

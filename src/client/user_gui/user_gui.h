@@ -2,8 +2,8 @@
 // Created by vieir on 08/03/2022.
 //
 
-#ifndef INF01151_TF_USER_MENU_H
-#define INF01151_TF_USER_MENU_H
+#ifndef INF01151_TF_USER_GUI_H
+#define INF01151_TF_USER_GUI_H
 
 #include <ncurses.h>
 #include <string>
@@ -20,11 +20,13 @@ class UserGUI {
 private:
     Client *client;
 
+    int yMax, xMax;
+
     int menu_selected = 0;
 
     vector<string> main_win_content;
     WINDOW* main_win;
-    int main_win_lines = 12;
+    int main_win_lines = 3;
 
     WINDOW* input_win;
     int input_win_lines = 3;
@@ -58,4 +60,4 @@ private:
 };
 
 
-#endif //INF01151_TF_USER_MENU_H
+#endif //INF01151_TF_USER_GUI_H
