@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "args_parser.h"
 
-
 // privados
 
 char *ArgsParser::getArgsOptionValue(const char *option) {

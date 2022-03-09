@@ -8,15 +8,29 @@
 #include <cstring>
 #include <unistd.h>
 #include "client.h"
+#include "user_menu/user_menu.h"
 
-Client::Client(char * user, char* host, int port) {
+Client::Client(string user, string host, int port) {
     this->user = user;
     this->host = host;
     this->port = port;
 }
 
 int Client::start() {
-    logger.message(INFO, "---> Client user:@%s starting on host: [%s] port: [%d]  <---", this->user, this->host, this->port);
+    logger.message(INFO, "---> Client user:@%s starting on host: [%s] port: [%d]  <---", this->user.c_str(), this->host.c_str(), this->port);
+
+    UserMenu menu;
+
+    menu.start(user, host, port);
+
+    return 0;
+}
+
+bool Client::validateUser() {
+    return false;
+}
+
+bool Client::initSession() {
 
     int sockfd, n;
     unsigned int length;
@@ -25,7 +39,7 @@ int Client::start() {
 
     char buffer[256];
 
-    server = gethostbyname(this->host);
+    server = gethostbyname(this->host.c_str());
     if (server == NULL) {
         logger.message(ERROR, "ERROR, no such host\n");
         exit(0);
@@ -55,7 +69,18 @@ int Client::start() {
     logger.message(INFO, "Got an ack: %s\n", buffer);
 
     close(sockfd);
-    return 0;
 
-    return 0;
+    return false;
+}
+
+bool Client::messageSender() {
+    return false;
+}
+
+bool Client::follow(string user_name) {
+    return false;
+}
+
+bool Client::messageListener() {
+    return false;
 }

@@ -13,15 +13,14 @@ Server::Server(int port) {
     this->port = port;
 }
 
-[[noreturn]] int Server::start() {
+int Server::start() {
     logger.message(INFO,"---> Server starting on port: %d  <---", this->port);
 
     int sockfd, n;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
     // char buf[256];
-    char* message;
-    message = (char*) std::calloc(255, sizeof(char));
+
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
         logger.message(ERROR, "ERROR opening socket");
@@ -39,10 +38,15 @@ Server::Server(int port) {
     bool stop = false;
 
     while (!stop) {
+
+        char* message;
+        message = (char*) std::calloc(255, sizeof(char));
+
         /* receive from socket */
         n = recvfrom(sockfd, message, 256, 0, (struct sockaddr *) &cli_addr, &clilen);
         if (n < 0)
             logger.message(ERROR, "ERROR on recvfrom");
+
         logger.message(INFO, "Received a datagram: %s\n", message);
 
         if(message == "stop")

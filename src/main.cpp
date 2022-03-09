@@ -7,6 +7,7 @@
 #include "client/client.h"
 #include "aux_shared/logger.h"
 
+using namespace std;
 
 int main(int argc, char * argv[])
 {

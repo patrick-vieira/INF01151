@@ -14,4 +14,11 @@ add_executable(
         src/server/server.h
         src/client/client.cpp
         src/client/client.h
-        )
+        src/server/user/user.cpp
+        src/server/user/user.h
+        src/server/memory/serverMemory.cpp
+        src/server/memory/serverMemory.h
+        src/client/user_menu/user_menu.cpp
+        src/client/user_menu/user_menu.h)
+
+target_link_libraries(${PROJECT_NAME} ncurses)

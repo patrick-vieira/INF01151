@@ -15,27 +15,20 @@ void Logger::setMode(int level) {
 }
 
 
-void Logger::message(int level, const char *message, ...) {
+void Logger::message(int level, string message, ...) {
 
     if(current_level >= level) {
-        char* message_type;
 
         switch (level) {
-            case DEBUG: message_type = (char*)"\n DEBUG: "; break;
-            case INFO:  message_type = (char*)"\n INFO: "; break;
-            case ERROR: message_type = (char*)"\n ERROR: "; break;
-            default:
-                message_type = (char*)"\n ????: ";
+            case DEBUG: message = "DEBUG: " + message; break;
+            case INFO:  message = "INFO: " + message; break;
+            case ERROR: message = "ERROR: " + message; break;
+            default: message = "????: " + message; break;
         }
 
-        char* full_message;
-        full_message = (char*) malloc(strlen(message_type) + strlen(message)+ 1);
-        strcpy(full_message, message_type );
-        strcat(full_message, message);
-
         va_list argptr;
-        va_start(argptr, full_message); // warning ok, ele reclama que full_message não é o ultimo argumento da função
-        vfprintf(stderr, full_message, argptr);
+        va_start(argptr, message); // warning ok, ele reclama que full_message não é o ultimo argumento da função
+        vfprintf(stderr, message.c_str(), argptr);
         va_end(argptr);
     }
 
