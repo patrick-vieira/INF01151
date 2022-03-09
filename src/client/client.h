@@ -7,43 +7,44 @@
 
 
 #include "../aux_shared/logger.h"
+#include "session/session.h"
+#include "user_gui/user_gui.h"
 
 using namespace std;
+
+class Session;
+class UserGUI;
 
 class Client
 {
     Logger logger;
 
-    int port;
-    string host;
-    string user;
 
     string menu_choices[3] = {"Write message", "Follow user", "Exit"};
 
+private:
+    string user;
+    Session session;
+    UserGUI gui;
 
 public:
-    Client(string user, string host, int port);
+    Client(string user, Session session);
     int start();
 
     string getUser() {
         return user;
     }
-    string getHost() {
-        return host;
-    }
-    int getPort() {
-        return port;
-    }
 
 private:
+
     /** validateUser()
       valida o numero de caracteres no nome do user
       min 4 max 20    **/
     bool validateUser();
 
-    /** initSession()
+    /** openConnection()
       se conecta com o servidor **/
-    bool initSession();
+    string initSession();
 
     /** messageSender()
       envia uma mensagem para o servidor **/

@@ -53,7 +53,7 @@ int Server::start() {
             stop = true;
 
         /* send to socket */
-        n = sendto(sockfd, "Got your message\n", 17, 0,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
+        n = sendto(sockfd, "Got your message", 17, 0,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
         if (n  < 0)
             logger.message(ERROR, "ERROR on sendto");
     }

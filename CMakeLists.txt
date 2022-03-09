@@ -18,8 +18,11 @@ add_executable(
         src/server/user/user.h
         src/server/memory/serverMemory.cpp
         src/server/memory/serverMemory.h
+
         src/client/user_gui/user_gui.cpp
         src/client/user_gui/user_gui.h
-)
+
+        src/client/session/session.cpp
+        src/client/session/session.h)
 
 target_link_libraries(${PROJECT_NAME} ncurses)

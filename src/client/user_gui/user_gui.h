@@ -9,16 +9,13 @@
 #include <string>
 #include <vector>
 #include <curses.h>
-#include "../client.h"
 
 using namespace std;
 
-class Client;
 
 class UserGUI {
 
 private:
-    Client *client;
 
     int yMax, xMax;
 
@@ -26,7 +23,7 @@ private:
 
     vector<string> main_win_content;
     WINDOW* main_win;
-    int main_win_lines = 3;
+    int main_win_lines = 12;
 
     WINDOW* input_win;
     int input_win_lines = 3;
@@ -34,9 +31,11 @@ private:
     WINDOW* menu_win;
     int menu_win_lines = 5;
 
+
+
 public:
-    UserGUI(Client *pClient, string menu_choices[]) {
-        client = pClient;
+    UserGUI(string user_name, string menu_choices[]) {
+        this->user_name = user_name;
         this->menu_choices = menu_choices;
     };
     void start();
@@ -51,6 +50,7 @@ private:
     string getstring(WINDOW *window);
 
     string *menu_choices;
+    string user_name;
 
     void createMainWindow(int yMax, int xMax);
 

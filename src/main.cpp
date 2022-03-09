@@ -29,11 +29,16 @@ int main(int argc, char * argv[])
     }
 
     if ( argsParser.isServer() ) {
+
         Server server(argsParser.getPort());
         server.start();
+
     } else if ( argsParser.isClient() ) {
-        Client client(argsParser.getClientID(), "localhost", argsParser.getPort());
+
+        Session session("localhost", argsParser.getPort());
+        Client client(argsParser.getClientID(), session);
         client.start();
+
     }
 
     return 0;
