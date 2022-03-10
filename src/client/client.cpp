@@ -1,47 +1,28 @@
 //
 // Created by vieir on 07/03/2022.
 //
-
 #include <iostream>
 #include "client.h"
 
-Client::Client(string user, Session session) : session(session), gui(user, menu_choices) {
-    this->user = user;
-}
 
 int Client::start() {
-    logger.message(INFO, "---> Client user:@%s starting on host: [%s] port: [%d]  <---", this->user.c_str(), this->session.getHost().c_str(), this->session.getPort());
 
     this->validateUser();
-
-    session.openConnection();
     gui.start();
-
-    int selected = gui.select_menu();
-
-    while (this->menu_choices[selected] != "Exit") {
-        switch (selected) {
-            case 0: {     // Send Message
-                this->messageSender();
-                break;
-            }
-            case 1: {     // Follow User
-                string message = "User name to follow: ";
-                string user_input = gui.request_user_input(message);
-                //TODO send to server;
-                string server_response = session.sendMessage(user_input);
-                gui.main_window_add_line("Server response [Follow]: " + server_response);
-                break;
-            }
-            default:
-                break;
-
-        }
-        selected = gui.select_menu();
+    if (this->communicationManager.login(this->user)){
+        this->StartMessageSenderThread();
+        this->StartMessageListennerThread();
+    } else {
+        gui.main_window_add_line("Login error. ");
+        this->communicationManager.logout();
+        this->gui.stop();
     }
 
-    gui.stop();
-    session.closeConnection();
+    this->WaitForMessageSenderToExit();
+    this->WaitForMessageListennerToExit();
+
+    this->communicationManager.logout();
+    this->gui.stop();
     return 0;
 }
 
@@ -50,19 +31,56 @@ bool Client::validateUser() {
 }
 
 
-bool Client::messageSender() {
-    string user_input_message = "Say something: ";
-    string user_input = gui.request_user_input(user_input_message);
-    //TODO send to server;
-    string server_response = session.sendMessage(user_input);
-    gui.main_window_add_line("Server response [Message]: " + server_response);
-    return false;
+void Client::MessageSenderImplementation() {
+    int selected = gui.select_menu();
+
+    while (this->menu_choices[selected] != "Exit") {
+        switch (selected) {
+            case 0: {     // Send Message
+                string user_input_message = "Say something: ";
+                string user_input = gui.request_user_input(user_input_message);
+
+                this->communicationManager.sendMessage(user_input);
+                break;
+            }
+            case 1: {     // Follow User
+                string message = "User name to follow: ";
+                string user_input = gui.request_user_input(message);
+                //TODO Validar o tamanho maximo da mensagem 128;
+                //TODO send to server;
+                this->communicationManager.followUser(user_input);
+                break;
+            }
+            default:
+                break;
+
+        }
+        selected = gui.select_menu();
+    }
 }
 
-bool Client::follow(string user_name) {
-    return false;
+void Client::MessageListennerImplementation() {
+    sleep(1); //TODO remover pequno sleep para não escrever ao mesmo tempo na tela
+    while(TRUE) {
+        json notification = this->communicationManager.notificationAvailable();
+
+        switch (notification["type"].get<int>()) {
+            case LOGIN_RESPONSE_SUCCESS:
+                gui.main_window_add_line(notification["message"].get<string>());
+                break;
+            case LOGIN_RESPONSE_ERROR:
+                gui.main_window_add_line(notification["message"].get<string>());
+                break;
+            case NOTIFICATION:
+                gui.main_window_add_line(notification["message"].get<string>());
+                break;
+            default:
+                gui.main_window_add_line("Unknown message from server: " + to_string(notification));
+                break;
+        }
+        if (notification["type"] == LOGIN_RESPONSE_ERROR){
+            break;
+        }
+    }
 }
 
-bool Client::messageListener() {
-    return false;
-}

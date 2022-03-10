@@ -42,3 +42,9 @@ gdbserver localhost:1234 ./INF01151_TF -c -u patrick -d
 ```
 ### On Clion Attach to it
 ![img.png](clion_debug_config.png)
+
+
+Duvidas.
+
+visão dos clientes consistentes.
+ordenar mensagens recebidas pelo id do servidor.

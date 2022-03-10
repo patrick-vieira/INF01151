@@ -50,7 +50,7 @@ void UserGUI::start() {
 }
 
 void UserGUI::stop() {
-    getch();
+//    getch();
     endwin();
 }
 

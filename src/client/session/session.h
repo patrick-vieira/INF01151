@@ -13,6 +13,10 @@
 
 #include "../../aux_shared/logger.h"
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 class Session {
     Logger logger;
 
@@ -33,11 +37,13 @@ public:
     }
 
     bool openConnection();
-    string sendMessage(string message);
+    json sendMessage(json message);
+    json receiveMessage();
     void closeConnection();
 
     string getHost();
     int getPort();
+
 };
 
 

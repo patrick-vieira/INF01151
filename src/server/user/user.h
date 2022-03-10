@@ -9,10 +9,12 @@
 #include <vector>
 #include <string>
 
+using namespace std;
+
 class User {
 
-    std::string name;
-    std::vector<User> followers;
+    string name;
+    vector<User> followers;
 
 public:
     User(std::string name, std::vector<User> followers);

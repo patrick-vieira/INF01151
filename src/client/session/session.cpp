@@ -4,6 +4,7 @@
 
 
 #include "session.h"
+#include "../../aux_shared/message_types.h"
 
 
 bool Session::openConnection() {
@@ -25,23 +26,37 @@ bool Session::openConnection() {
     return true;
 }
 
-string Session::sendMessage(string message){
 
-    n = sendto(sockfd, message.c_str(), strlen(message.c_str()), 0, (const struct sockaddr *) &serv_addr, sizeof(struct sockaddr_in));
+json Session::sendMessage(json message){
+
+    string plain_message = to_string(message);
+
+    n = sendto(sockfd, plain_message.c_str(), strlen(plain_message.c_str()), 0, (const struct sockaddr *) &serv_addr, sizeof(struct sockaddr_in));
     if (n < 0)
         logger.message(ERROR, "ERROR sendto");
 
+//    char* server_response_buffer = (char*) calloc(256, sizeof(char));
+//    n = recvfrom(sockfd, server_response_buffer, 256, 0, (struct sockaddr *) &from, &length);
+//    if (n < 0)
+//        logger.message(ERROR, "ERROR recvfrom");
+//
+//    string response = string(server_response_buffer);
+//
+//    json server_response = json::parse(response);
+//    return server_response;
+    return NULL;
+}
 
-    char buffer[256];
-    length = sizeof(struct sockaddr_in);
-    n = recvfrom(sockfd, buffer, 256, 0, (struct sockaddr *) &from, &length);
+json Session::receiveMessage(){
+    char* server_response_buffer = (char*) calloc(256, sizeof(char));
+    n = recvfrom(sockfd, server_response_buffer, 256, 0, (struct sockaddr *) &from, &length);
     if (n < 0)
         logger.message(ERROR, "ERROR recvfrom");
 
-    string response = string(buffer);
-    logger.message(INFO, "Got an ack: %s\n", response.c_str());
+    string response = string(server_response_buffer);
 
-    return response;
+    json server_response = json::parse(response);
+    return server_response;
 }
 
 void Session::closeConnection() {
@@ -55,4 +70,5 @@ string Session::getHost() {
 int Session::getPort() {
     return this->port;
 }
+
 
