@@ -38,7 +38,7 @@ make -C build
 ## Debuging with gbd and Clion
 ### run the GDB server
 ```bash
-gdbserver localhost:1234 ./INF01151_TF -c -u patrick -d
+gdbserver localhost:1234 ./INF01151 -c -u patrick -d
 ```
 ### On Clion Attach to it
 ![img.png](clion_debug_config.png)

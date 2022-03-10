@@ -12,6 +12,8 @@ add_executable(
         INF01151_TF
         src/main.cpp
 
+        src/aux_shared/message_types.h
+
         src/aux_shared/logger.cpp
         src/aux_shared/logger.h
 
@@ -44,9 +46,9 @@ add_executable(
 
         src/client/communication_manager/communication_manager.cpp
         src/client/communication_manager/communication_manager.h
-
-        src/aux_shared/message_types.h
-        src/client/runner/runner.cpp src/client/runner/runner.h src/client/client_thread_runner.h)
+        
+        src/client/client_thread_runner.h
+)
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json ncurses pthread)
