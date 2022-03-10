@@ -19,7 +19,7 @@ int Client::start() {
     }
 
     this->WaitForMessageSenderToExit();
-    this->WaitForMessageListennerToExit();
+//    this->WaitForMessageListennerToExit();
 
     this->communicationManager.logout();
     this->gui.stop();
