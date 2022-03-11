@@ -46,7 +46,7 @@ add_executable(
 
         src/client/communication_manager/communication_manager.cpp
         src/client/communication_manager/communication_manager.h
-        
+
         src/client/client_thread_runner.h
 )
 

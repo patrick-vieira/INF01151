@@ -78,7 +78,12 @@ void CommunicationManager::messageReceiver() {
                 n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
                 if (n  < 0)
                     logger.message(ERROR, "ERROR on sendto");
-
+                n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
+                if (n  < 0)
+                    logger.message(ERROR, "ERROR on sendto");
+                n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
+                if (n  < 0)
+                    logger.message(ERROR, "ERROR on sendto");
 
                 break;
             }

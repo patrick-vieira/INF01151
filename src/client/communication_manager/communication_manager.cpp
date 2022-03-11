@@ -14,6 +14,7 @@ bool CommunicationManager::login(string user_name) {
 
     this->session.sendMessage(message);
 
+    // TODO verificar se mensagem chegou no server, se não false;
     return true;
 }
 
