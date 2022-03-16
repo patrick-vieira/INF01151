@@ -18,10 +18,9 @@ using namespace std;
 class Session;
 class UserGUI;
 
-class Client : ClientThreadRunner
-{
-    Logger logger;
+class Client : ClientThreadRunner {
 
+    Logger logger;
     string menu_choices[3] = {"Write message", "Follow user", "Exit"};
 
 private:

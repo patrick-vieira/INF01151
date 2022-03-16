@@ -8,26 +8,32 @@
 
 #include "../aux_shared/logger.h"
 #include "user/user.h"
+#include "server_thread_runner.h"
 
-class Server
-{
+#define     TRUE        1
+#define		MAX_ITEMS	3
+
+class Server : ServerThreadRunner {
+
     int port;
     Logger logger;
 
-    public:
-        Server(int port);
+public:
+    Server(int port);
 
 
-    public:
-        int start();
+public:
+    int start();
 
 
-    private:
+private:
+    void ProducerImplementation() override;
+    void ConsumerImplementation() override;
 
         /* nova conexão de usuario, se não existe cria,
          * se já existe conecta, se já tem 2 conectados retorna mensagem de erro para o client
          * */
-        bool newUserConnection(User user);
+    bool newUserConnection(User user);
 
 
 };
