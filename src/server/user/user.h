@@ -80,9 +80,9 @@ public:
 
     json loginFail(sockaddr_in in, int i);
 
-    void removeSession(sockaddr_in cli_addr);
+    void removeSession(list<struct sockaddr_in>::iterator it);
 
-    list<struct sockaddr_in> getSessions();
+    list<struct sockaddr_in> * getSessions();
 };
 
 

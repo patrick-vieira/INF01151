@@ -60,7 +60,9 @@ void Server::ProducerImplementation() {
     while (TRUE) {
 //        sleep(rand()%5);
 
-        list<MESSAGE> messages = communicationManager.messageReceiver2();
+        list<MESSAGE> messages = communicationManager.messageReceiver();
+        if(messages.size() <= 0)
+            continue;
 
         pthread_mutex_lock(&mutex);
         while (counter == MAX_ITEMS)

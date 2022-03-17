@@ -22,14 +22,17 @@ bool User::newSession(struct sockaddr_in cli_addr) {
     return false;
 }
 
-list<struct sockaddr_in> User::getSessions() {
-    return sessions;
+list<struct sockaddr_in> * User::getSessions() {
+    return &sessions;
 }
 
-void User::removeSession(struct sockaddr_in cli_addr) {
-//    auto it = find(sessions.begin(), sessions.end(), cli_addr);
-//    if (it != sessions.end())
-//        sessions.erase(it);
+void User::removeSession(list<struct sockaddr_in>::iterator it) {
+    sessions.erase(it);
+
+//    for (auto it = begin (sessions); it != end (sessions); ++it) {
+//        if(*it == *it2)
+//            sessions.erase(it);
+//    }
 }
 
 

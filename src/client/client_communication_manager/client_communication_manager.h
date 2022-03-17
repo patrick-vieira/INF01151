@@ -28,11 +28,13 @@ public:
     };
 
     bool login(string user_name);
+    void logout();
+    bool pingReply();
+
     bool sendMessage(string user_name);
     bool followUser(string basicString);
     json notificationAvailable();
 
-    void logout();
 
 
 private:

@@ -74,6 +74,10 @@ void Client::MessageListennerImplementation() {
             case NOTIFICATION:
                 gui.main_window_add_line(notification["message"].get<string>());
                 break;
+            case PING:
+                gui.main_window_add_line(notification["message"].get<string>());
+                this->communicationManager.pingReply();
+                break;
             default:
                 gui.main_window_add_line("Unknown message from server: " + to_string(notification));
                 break;

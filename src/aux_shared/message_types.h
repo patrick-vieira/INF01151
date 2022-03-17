@@ -16,5 +16,6 @@
 #define NEW_MESSAGE                 200
 #define FOLLOW_REQUEST              250
 #define NOTIFICATION                300
+#define PING                        400
 
 #endif //INF01151_TF_MESSAGE_TYPES_H

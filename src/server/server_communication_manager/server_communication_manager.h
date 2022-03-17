@@ -7,6 +7,7 @@
 
 #include <unistd.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <cstring>
 #include <cstdlib>
 #include <list>
@@ -35,24 +36,25 @@ private:
     int sockfd, n;
 
     socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
+//    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in serv_addr;
 
-    list<User> users;
+    list<User*> users;
 
 
 public:
     void openSocket(int port);
     void closeSocket();
 
-    void messageReceiver();
-    list<MESSAGE> messageReceiver2();
+    list<MESSAGE> messageReceiver();
     void messageSender();
 
-    User getOrCreateUser(string user_name);
+    User* getOrCreateUser(string user_name);
     bool updateUser(User user);
     void saveUsers();
 
-    bool newSession(User user, sockaddr_in cli_addr);
+    bool newSession(User* user, sockaddr_in cli_addr);
+    bool ping(sockaddr_in cli_addr);
 };
 
 

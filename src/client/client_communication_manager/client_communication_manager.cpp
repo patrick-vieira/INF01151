@@ -37,6 +37,14 @@ bool ClientCommunicationManager::followUser(string user_input) {
     return false;
 }
 
+bool ClientCommunicationManager::pingReply() {
+    json message;
+    message["type"] = PING;
+
+    this->session.sendMessage(message);
+    return false;
+}
+
 json ClientCommunicationManager::notificationAvailable() {
     json response = session.receiveMessage();
     return response;
