@@ -9,7 +9,7 @@
 #include "../aux_shared/logger.h"
 #include "session/session.h"
 #include "user_gui/user_gui.h"
-#include "communication_manager/communication_manager.h"
+#include "client_communication_manager/client_communication_manager.h"
 
 #include "client_thread_runner.h"
 
@@ -25,7 +25,7 @@ class Client : ClientThreadRunner {
 
 private:
     string user;
-    CommunicationManager communicationManager;
+    ClientCommunicationManager communicationManager;
     UserGUI gui;
 
 public:

@@ -6,18 +6,18 @@
 #define INF01151_TF_SERVERMEMORY_H
 
 
-#include "../user/user.h"
+//#include "../user/user.h"
 
 using namespace std;
 
 class ServerPersistence {
 
 public:
-    ServerPersistence(string file_path);
-
-    User getUser(string user_name);
-    bool addUser(User user);
-    bool saveUser(User user);
+//    ServerPersistence(string file_path);
+//
+//    User getUser(string user_name);
+//    bool addUser(User user);
+//    bool saveUser(User user);
 };
 
 

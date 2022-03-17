@@ -36,7 +36,7 @@ void Client::MessageSenderImplementation() {
 
     while (this->menu_choices[selected] != "Exit") {
         switch (selected) {
-            case 0: {     // Send Message
+            case 0: {     // Write message
                 string user_input_message = "Say something: ";
                 string user_input = gui.request_user_input(user_input_message);
 

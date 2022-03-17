@@ -20,11 +20,9 @@ add_executable(
         src/aux_shared/args_parser.cpp
         src/aux_shared/args_parser.h
 
-        src/server/server.cpp
-        src/server/server.h
+        src/server/server_communication_manager/server_communication_manager.cpp
+        src/server/server_communication_manager/server_communication_manager.h
 
-        src/client/client.cpp
-        src/client/client.h
 
         src/server/user/user.cpp
         src/server/user/user.h
@@ -41,13 +39,19 @@ add_executable(
         src/server/session_manager/session_manager.cpp
         src/server/session_manager/session_manager.h
 
-        src/server/communication_manager/communication_manager.cpp
-        src/server/communication_manager/communication_manager.h
 
-        src/client/communication_manager/communication_manager.cpp
-        src/client/communication_manager/communication_manager.h
+        src/client/client_communication_manager/client_communication_manager.cpp
+        src/client/client_communication_manager/client_communication_manager.h
+
+
+        src/server/server.cpp
+        src/server/server.h
+
+        src/client/client.cpp
+        src/client/client.h
 
         src/client/client_thread_runner.h
+        src/server/server_thread_runner.h
 )
 
 

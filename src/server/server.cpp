@@ -3,8 +3,10 @@
 //
 
 
+#include <thread>
+#include <sstream>
 #include "server.h"
-#include "communication_manager/communication_manager.h"
+
 
 using namespace std;
 
@@ -15,19 +17,37 @@ Server::Server(int port): ServerThreadRunner() {
 int Server::start() {
     logger.message(INFO,"---> Server starting on port: %d  <---", this->port);
 
-    this->StartConsumerThread();
-
-    this->StartProducerThread();
-
-    this->WaitForConsumerToExit();
-
-//    CommunicationManager communicationManager;
 //
-//    communicationManager.openSocket(port);
 //
-//    communicationManager.messageReceiver();
+//    CONSUMER_ARGS consumerArgs2;
+//    consumerArgs2.stop_lt = 40;
+//    pthread_t consumer2 = this->StartConsumerThread(consumerArgs2);
 //
-//    communicationManager.closeSocket();
+//    CONSUMER_ARGS consumerArgs3;
+//    consumerArgs3.stop_lt = 80;
+//    pthread_t consumer3 = this->StartConsumerThread(consumerArgs3);
+//
+//
+
+//    this->WaitForConsumerToExit(consumer3);
+//    this->WaitForConsumerToExit(consumer2);
+//
+
+
+
+    communicationManager.openSocket(port);
+
+    pthread_t producer = this->StartProducerThread();
+
+
+    CONSUMER_ARGS consumerArgs1;
+    consumerArgs1.stop_lt = 123;
+    pthread_t consumer1 = this->StartConsumerThread(consumerArgs1);
+
+    WaitForConsumerToExit(consumer1);
+    WaitForProducerToExit(producer);
+
+    communicationManager.closeSocket();
 
     return 0;
 }
@@ -38,21 +58,30 @@ bool Server::newUserConnection(User user) {
 
 void Server::ProducerImplementation() {
     while (TRUE) {
-        sleep(rand()%5);
+//        sleep(rand()%5);
+
+        list<MESSAGE> messages = communicationManager.messageReceiver2();
+
         pthread_mutex_lock(&mutex);
         while (counter == MAX_ITEMS)
             pthread_cond_wait(&cond_empty, &mutex);
 
 
-//        buffer[in] = rand()%100;
-        int r = rand()%100;
-        MESSAGE message;
-        message.sender = "Sender-" + to_string(r);
-        message.body = "body-"+ to_string(r);
-        buffer[in] = message;
-        counter++;
-        logger.message(INFO, "-----------Produzindo buffer[%d]: sender %s body %s", in, buffer[in].sender.c_str(), buffer[in].body.c_str());
-        in = (in + 1) % MAX_ITEMS;
+        for (auto it = begin (messages); it != end (messages); ++it) {
+            int index = distance(messages.begin(), it);
+            buffer[in] = *it;
+            counter++;
+            in = (in + 1) % MAX_ITEMS;
+        }
+
+
+//        MESSAGE message;
+//        message.sender = "Sender-" + to_string(r);
+//        message.body = "body-"+ to_string(r);
+//        buffer[in] = message;
+//        counter++;
+//        logger.message(INFO, "------------------------------------Produzindo buffer[%d]: sender %s body %s", in, buffer[in].sender.c_str(), buffer[in].body.c_str());
+//        in = (in + 1) % MAX_ITEMS;
 
 
         pthread_cond_signal(&cond_full);
@@ -62,25 +91,41 @@ void Server::ProducerImplementation() {
 
 void Server::ConsumerImplementation() {
 
-    MESSAGE my_task;
+    std::stringstream ss;
+    ss << std::this_thread::get_id();
+    string ts = pthreadAsString(this_thread::get_id());
+    string ts2 = ss.str();
 
-    int consumer_id = rand() %100;
+    CONSUMER_ARGS not_working_par1 = getThreadArgs(ts);
+    CONSUMER_ARGS not_working_par2=  getThreadArgs(ts2);
+    CONSUMER_ARGS not_working_par3 = pthread_args_dict.find(ss.str())->second;
 
-    while (TRUE) {
-        sleep(rand()%5);
+
+    pthread_mutex_lock(&mutex);
+    const CONSUMER_ARGS t_parameters = pthread_args_vec.back();
+    pthread_args_vec.pop_back();
+    pthread_mutex_unlock(&mutex);
+
+    while (t_parameters.args_load) {
+//        sleep(rand()%5);
         pthread_mutex_lock(&mutex);
         while (counter == 0)
             pthread_cond_wait(&cond_full, &mutex);
 
 
-        my_task = buffer[out]; //get item to consume
+        MESSAGE my_task = buffer[out]; //get item to consume
         counter--;
-        logger.message(INFO, "--Consumindo id[%d] buffer[%d]: sender: %s -> body %s", consumer_id, out, my_task.sender.c_str(), my_task.body.c_str());
-        out = (out + 1) % MAX_ITEMS;
 
+        logger.message(INFO, "--ids[%s] param[%d] - Consumindo buffer[%d]: is_direct: %d -> payload %s",
+                       ts.c_str(), t_parameters.stop_lt, out, my_task.direct_response, to_string(my_task.payload).c_str());
+
+        out = (out + 1) % MAX_ITEMS;
 
         pthread_cond_signal(&cond_empty);
         pthread_mutex_unlock(&mutex);
     }
+
+    logger.message(INFO, "--ids[%s] saindo [%d] buffer[%d]",
+                   ts.c_str(), t_parameters.stop_lt, out);
 
 }

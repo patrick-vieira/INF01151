@@ -35,15 +35,6 @@ json Session::sendMessage(json message){
     if (n < 0)
         logger.message(ERROR, "ERROR sendto");
 
-//    char* server_response_buffer = (char*) calloc(256, sizeof(char));
-//    n = recvfrom(sockfd, server_response_buffer, 256, 0, (struct sockaddr *) &from, &length);
-//    if (n < 0)
-//        logger.message(ERROR, "ERROR recvfrom");
-//
-//    string response = string(server_response_buffer);
-//
-//    json server_response = json::parse(response);
-//    return server_response;
     return NULL;
 }
 
