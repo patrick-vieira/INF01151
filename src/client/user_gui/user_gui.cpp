@@ -95,12 +95,15 @@ void UserGUI::createMenuWindow(int yMax, int xMax) {
 }
 
 
-int UserGUI::select_menu() {
+int UserGUI::select_menu(bool login_success) {
+
+    if(!login_success)
+        return -1;
+
     // create window menu
     this->createMenuWindow(yMax, xMax);
 
     bool selecting_menu = true;
-
 
     while (selecting_menu) {
         // print menu

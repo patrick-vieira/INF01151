@@ -19,7 +19,7 @@ int Client::start() {
     }
 
     this->WaitForMessageSenderToExit();
-//    this->WaitForMessageListennerToExit();
+    this->WaitForMessageListennerToExit();
 
     this->communicationManager.logout();
     this->gui.stop();
@@ -32,9 +32,10 @@ bool Client::validateUser() {
 
 
 void Client::MessageSenderImplementation() {
-    int selected = gui.select_menu();
 
-    while (this->menu_choices[selected] != "Exit") {
+    int selected = gui.select_menu(login_success);
+
+    while (selected < 0 || this->menu_choices[selected] != "Exit") {
         switch (selected) {
             case 0: {     // Write message
                 string user_input_message = "Say something: ";
@@ -55,18 +56,20 @@ void Client::MessageSenderImplementation() {
                 break;
 
         }
-        selected = gui.select_menu();
+        selected = gui.select_menu(login_success);
     }
+    running = false;
 }
 
 void Client::MessageListennerImplementation() {
     sleep(1); //TODO remover pequno sleep para não escrever ao mesmo tempo na tela
-    while(TRUE) {
+    while(running) {
         json notification = this->communicationManager.notificationAvailable();
 
         switch (notification["type"].get<int>()) {
             case LOGIN_RESPONSE_SUCCESS:
                 gui.main_window_add_line(notification["message"].get<string>());
+                login_success = true;
                 break;
             case LOGIN_RESPONSE_ERROR:
                 gui.main_window_add_line(notification["message"].get<string>());
@@ -77,6 +80,8 @@ void Client::MessageListennerImplementation() {
             case PING:
                 gui.main_window_add_line(notification["message"].get<string>());
                 this->communicationManager.pingReply();
+                break;
+            case NO_MESSAGE:
                 break;
             default:
                 gui.main_window_add_line("Unknown message from server: " + to_string(notification));

@@ -40,6 +40,9 @@ protected:
     virtual void MessageSenderImplementation() = 0;
     virtual void MessageListennerImplementation() = 0;
 
+    bool login_success = false;
+    bool running = true;
+
 private:
     static void * MessageSenderEntryFunc(void * This) {((ClientThreadRunner *)This)->MessageSenderImplementation(); return NULL;}
     static void * MessageListennerEntryFunc(void * This) {((ClientThreadRunner *)This)->MessageListennerImplementation(); return NULL;}

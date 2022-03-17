@@ -36,10 +36,6 @@ add_executable(
         src/client/session/session.cpp
         src/client/session/session.h
 
-        src/server/session_manager/session_manager.cpp
-        src/server/session_manager/session_manager.h
-
-
         src/client/client_communication_manager/client_communication_manager.cpp
         src/client/client_communication_manager/client_communication_manager.h
 

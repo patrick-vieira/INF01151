@@ -3,9 +3,6 @@
 //
 
 #include "server_communication_manager.h"
-#include "../../aux_shared/message_types.h"
-#include <nlohmann/json.hpp>
-#include <fstream>
 
 using json = nlohmann::json;
 
@@ -25,8 +22,8 @@ void ServerCommunicationManager::openSocket(int port) {
     }
 
     struct timeval tv; // set recvfrom timeout
-    tv.tv_sec = 5;
-    tv.tv_usec = 500000;
+    tv.tv_sec = 1;
+    tv.tv_usec = 100000;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         logger.message(ERROR, "ERROR on setting opt timeout");
         exit(912);
@@ -37,8 +34,34 @@ void ServerCommunicationManager::openSocket(int port) {
 }
 
 void ServerCommunicationManager::closeSocket() {
-
     close(sockfd);
+}
+
+bool ServerCommunicationManager::messageSender(MESSAGE message) {
+
+    if(message.direct_response){
+        struct sockaddr_in _address = message.direct_address;
+        string message_body = to_string(message.payload);
+
+        int n = sendto(sockfd, message_body.c_str(), strlen(message_body.c_str()), 0,(struct sockaddr *) &_address, sizeof(struct sockaddr));
+        if (n  < 0)
+            logger.message(ERROR, "ERROR on sendto");
+
+        return true;
+
+    } else {
+        list<CLIENT_ADDRESS> *active_sessions = message.user_destination.getActiveSessions(sockfd);
+        for (auto iter = active_sessions->begin(), end = active_sessions->end(); iter != end; ++iter) {
+            struct sockaddr_in _address = iter->sockaddrIn();
+            string message_body = to_string(message.payload);
+
+            int n = sendto(sockfd, message_body.c_str(), strlen(message_body.c_str()), 0,(struct sockaddr *) &_address, sizeof(struct sockaddr));
+            if (n  < 0)
+                logger.message(ERROR, "ERROR on sendto");
+        }
+
+        return true;
+    }
 }
 
 list<MESSAGE> ServerCommunicationManager::messageReceiver() {
@@ -50,7 +73,7 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
     list<MESSAGE> messages;
 
     /* receive from socket */
-    n = recvfrom(sockfd, message_buffer, 256, 0, (struct sockaddr *) &sender_cli_addr, &clilen);
+    int n = recvfrom(sockfd, message_buffer, 256, 0, (struct sockaddr *) &sender_cli_addr, &clilen);
     if (n < 0) {
         logger.message(ERROR, "[Message Receiver]: Awaitng for message.");
         return messages;
@@ -65,22 +88,16 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
             User* user;
             user = getOrCreateUser(message_json["user"]);
             if(newSession(user, sender_cli_addr)) {
-                json login_response = user->loginSuccess(sender_cli_addr, sockfd);
-
                 MESSAGE message;
-                message.payload = login_response;
+                message.payload = user->loginSuccessMessage();
                 message.direct_address = sender_cli_addr;
                 message.direct_response = true;
-
                 messages.push_front(message);
             } else {
-                json login_response = user->loginFail(sender_cli_addr, sockfd);
-
                 MESSAGE message;
-                message.payload = login_response;
+                message.payload = user->loginFail();
                 message.direct_address = sender_cli_addr;
                 message.direct_response = true;
-
                 messages.push_front(message);
             }
             break;
@@ -129,7 +146,6 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
 }
 
 User* ServerCommunicationManager::getOrCreateUser(string user_name) {
-//    list<User*>::iterator it;
 
     for (auto it = this->users.begin(); it != this->users.end(); ++it) {
         int index = std::distance(users.begin(), it);
@@ -140,21 +156,13 @@ User* ServerCommunicationManager::getOrCreateUser(string user_name) {
             return user;
         }
     }
-//for (it = begin (this->users); it != end (this->users); ++it) {
-//        int index = std::distance(users.begin(), it);
-//        if(it->getName() == user_name) {
-//            logger.message(INFO, "User found [%s] active sessions [%d]", it->getName().c_str(), it->active_sessions_count());
-//            User user = it.operator*();
-//            return user;
-//        }
-//    }
 
-    logger.message(INFO, "User found [%s]", user_name.c_str());
-//    User user(user_name);
+
     User* user = new User(user_name);
     users.push_back(user);
-
     saveUsers();
+
+    logger.message(INFO, "New User [%s]", user->getName().c_str());
 
     return user;
 }
@@ -167,12 +175,6 @@ void ServerCommunicationManager::saveUsers() {
         User* user = *it;
         jsonfile.push_back(user->asJson());
     }
-//    for (auto it = begin (this->users); it != end (this->users); ++it) {
-//        int index = std::distance(users.begin(), it);
-//        User user = *it;
-//        jsonfile.push_back(user.asJson());
-//    }
-
     ofstream file("users.json");
     file << jsonfile;
 }
@@ -193,46 +195,20 @@ void ServerCommunicationManager::saveUsers() {
 //}
 
 bool ServerCommunicationManager::newSession(User* user, sockaddr_in cli_addr) {
-    list<struct sockaddr_in> *user_sessions = user->getSessions();
-
-    // parse
-    char string_ip[INET_ADDRSTRLEN];
-    uint16_t  port;
-
-    // client ip to string
-    inet_ntop(AF_INET, &(cli_addr.sin_addr), string_ip, INET_ADDRSTRLEN);
-    // client port to int
-    port = htons(cli_addr.sin_port);
-
-    logger.message(INFO, "string_ip as str: %s:%d", string_ip, port);
-
-    // restore
-
-    struct sockaddr_in temp_address;
-    // recreate socket address
-    inet_pton(AF_INET, string_ip, &(temp_address.sin_addr));
-    temp_address.sin_port = htons(port);
-    temp_address.sin_family = AF_INET;
-
-    bool result = ping(temp_address);
-
-    for (auto iter = user_sessions->begin(), end = user_sessions->end(); iter != end; ++iter) {
-        if(!ping(*iter))
-            iter = user_sessions->erase(iter);
-    }
-
-    bool success = user->newSession(cli_addr);
-//    updateUser(user); //TODO change user to pointer and can remove this function?
+    bool success = user->newSession(cli_addr, sockfd);
+    saveUsers();
     return success;
 }
 
-bool ServerCommunicationManager::ping(sockaddr_in cli_addr){
+bool ServerCommunicationManager::ping(CLIENT_ADDRESS cli_addr){
     json response_message_json;
     response_message_json["type"] = PING;
     response_message_json["message"] = "[SERVER]: Ping";
     string flat_response_message = to_string(response_message_json);
 
-    n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), MSG_CONFIRM ,(struct sockaddr *) &cli_addr, sizeof(struct sockaddr));
+    sockaddr_in cli_addr2 = cli_addr.sockaddrIn();
+
+    int n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), MSG_CONFIRM ,(struct sockaddr *) &cli_addr2, sizeof(struct sockaddr));
     if (n  < 0) {
         logger.message(ERROR, "ERROR ping not received.");
         return false;
@@ -245,3 +221,4 @@ bool ServerCommunicationManager::ping(sockaddr_in cli_addr){
 
     return true;
 }
+

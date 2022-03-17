@@ -40,7 +40,7 @@ public:
     };
     void start();
     void stop();
-    int select_menu();
+    int select_menu(bool login_success);
 
     string request_user_input(string message);
     void main_window_add_line(string new_line);

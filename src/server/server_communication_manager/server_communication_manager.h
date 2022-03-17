@@ -10,8 +10,10 @@
 #include <arpa/inet.h>
 #include <cstring>
 #include <cstdlib>
+#include <fstream>
 #include <list>
 #include <nlohmann/json.hpp>
+#include "../../aux_shared/message_types.h"
 #include "../../aux_shared/logger.h"
 #include "../user/user.h"
 
@@ -20,7 +22,7 @@ using namespace std;
 using json = nlohmann::json;
 
 typedef struct {
-    User destination;
+    User user_destination;
     json payload;
 
     bool direct_response; // if true send to direct_address else to all user connections
@@ -33,10 +35,9 @@ class ServerCommunicationManager {
 private:
     Logger logger;
 
-    int sockfd, n;
+    int sockfd;
 
     socklen_t clilen;
-//    struct sockaddr_in serv_addr, cli_addr;
     struct sockaddr_in serv_addr;
 
     list<User*> users;
@@ -46,15 +47,15 @@ public:
     void openSocket(int port);
     void closeSocket();
 
+    bool messageSender(MESSAGE message);
     list<MESSAGE> messageReceiver();
-    void messageSender();
 
     User* getOrCreateUser(string user_name);
     bool updateUser(User user);
     void saveUsers();
 
     bool newSession(User* user, sockaddr_in cli_addr);
-    bool ping(sockaddr_in cli_addr);
+    bool ping(CLIENT_ADDRESS cli_addr);
 };
 
 

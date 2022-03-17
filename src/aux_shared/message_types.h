@@ -14,6 +14,7 @@
 
 
 #define NEW_MESSAGE                 200
+#define NO_MESSAGE                  201
 #define FOLLOW_REQUEST              250
 #define NOTIFICATION                300
 #define PING                        400

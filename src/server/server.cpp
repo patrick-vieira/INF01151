@@ -115,7 +115,13 @@ void Server::ConsumerImplementation() {
             pthread_cond_wait(&cond_full, &mutex);
 
 
-        MESSAGE my_task = buffer[out]; //get item to consume
+        MESSAGE my_task = buffer[out];
+
+        if(communicationManager.messageSender(my_task)){
+
+        } else {
+
+        }
         counter--;
 
         logger.message(INFO, "--ids[%s] param[%d] - Consumindo buffer[%d]: is_direct: %d -> payload %s",
