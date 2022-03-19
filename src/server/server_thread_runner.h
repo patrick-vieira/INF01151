@@ -21,7 +21,7 @@ public:
     } CONSUMER_ARGS;
 
     ServerThreadRunner() {
-        pthread_cond_init(&cond_message_avaliable, NULL);
+//        pthread_cond_init(&cond_message_avaliable, NULL);
         pthread_mutex_init(&mutex, NULL);
         pthread_mutex_init(&mutex_args, NULL);
     }
@@ -92,7 +92,7 @@ protected:
     virtual void ProducerImplementation() = 0;
     virtual void ConsumerImplementation() = 0;
 
-    pthread_cond_t 	cond_message_avaliable;
+//    pthread_cond_t 	cond_message_avaliable;
     pthread_mutex_t mutex, mutex_args;
     int counter = 0, in = 0, out = 0;
 

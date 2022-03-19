@@ -169,9 +169,11 @@ int User::active_sessions_count()  {
 }
 
 void User::setConsumerThread(pthread_t consumer_thread) {
+    pthread_cond_init(&cond_message_avaliable, NULL);
     this->consumer_thread = consumer_thread;
     this->consumer_thread_execute = true;
 }
+
 
 
 

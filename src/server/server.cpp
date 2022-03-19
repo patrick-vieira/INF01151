@@ -45,8 +45,6 @@ int Server::start() {
 
         list<MESSAGE> new_messages = communicationManager.messageReceiver();
 
-        pthread_cond_signal(&cond_message_avaliable);
-
         if(new_messages.empty()){
             communicationManager.pingAll();
             continue;
@@ -80,6 +78,8 @@ int Server::start() {
                 logger.message(INFO, "[NEW USER ADD TO DICT]: USER %s", received_message_it->sender->getName().c_str());
             }
 
+            pthread_cond_signal(&received_message_it->receiver->cond_message_avaliable);
+
         }
     }
 }
@@ -112,7 +112,7 @@ void Server::ConsumerImplementation() {
                     pthread_mutex_unlock(&mutex);
                     return;
                 }
-                pthread_cond_wait(&cond_message_avaliable, &mutex);
+                pthread_cond_wait(&user_messages_buffer_it->first->cond_message_avaliable, &mutex);
             }
             MESSAGE my_task = user_messages_buffer_it->second.front(); // get user message
 

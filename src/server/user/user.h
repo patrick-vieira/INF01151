@@ -47,10 +47,12 @@ class User {
     list<User*> followers;
 
     pthread_t consumer_thread = 0;
+
     bool consumer_thread_execute = false;
 
 public:
     list<CLIENT_ADDRESS> active_sessions;
+    pthread_cond_t 	cond_message_avaliable;
 
     User() {}
     User(string name);
@@ -82,6 +84,7 @@ public:
     json asJson();
 
     void setConsumerThread(pthread_t consumer_thread);
+
 
 private:
     bool ping(CLIENT_ADDRESS cli_addr, int sockfd);
