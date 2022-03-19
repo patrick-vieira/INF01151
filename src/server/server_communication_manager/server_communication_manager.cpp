@@ -23,7 +23,7 @@ void ServerCommunicationManager::openSocket(int port) {
 
     struct timeval tv; // set recvfrom timeout
     tv.tv_sec = 1;
-    tv.tv_usec = 100000;
+    tv.tv_usec = 20000;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         logger.message(ERROR, "ERROR on setting opt timeout");
         exit(912);
@@ -40,7 +40,7 @@ void ServerCommunicationManager::closeSocket() {
 bool ServerCommunicationManager::messageSender(MESSAGE message) {
 
     if(message.direct_response){
-        struct sockaddr_in _address = message.direct_address;
+        struct sockaddr_in _address = message.direct_response_address;
         string message_body = to_string(message.payload);
 
         int n = sendto(sockfd, message_body.c_str(), strlen(message_body.c_str()), 0,(struct sockaddr *) &_address, sizeof(struct sockaddr));
@@ -50,17 +50,19 @@ bool ServerCommunicationManager::messageSender(MESSAGE message) {
         return true;
 
     } else {
-        list<CLIENT_ADDRESS> *active_sessions = message.user_destination.getActiveSessions(sockfd);
-        for (auto iter = active_sessions->begin(), end = active_sessions->end(); iter != end; ++iter) {
+        list<CLIENT_ADDRESS> active_sessions = message.receiver->getActiveSessions();
+        bool consumed = false;
+        for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
             struct sockaddr_in _address = iter->sockaddrIn();
             string message_body = to_string(message.payload);
 
             int n = sendto(sockfd, message_body.c_str(), strlen(message_body.c_str()), 0,(struct sockaddr *) &_address, sizeof(struct sockaddr));
             if (n  < 0)
                 logger.message(ERROR, "ERROR on sendto");
+            consumed = true;
         }
 
-        return true;
+        return consumed;
     }
 }
 
@@ -75,61 +77,100 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
     /* receive from socket */
     int n = recvfrom(sockfd, message_buffer, 256, 0, (struct sockaddr *) &sender_cli_addr, &clilen);
     if (n < 0) {
-        logger.message(ERROR, "[Message Receiver]: Awaitng for message.");
+//        logger.message(DEBUG, "[Message Receiver]: Awaitng for message.");
         return messages;
     }
     json message_json = json::parse(message_buffer);
 
     logger.message(INFO, "[Message Receiver]: New message received: %s\n", to_string(message_json).c_str());
 
+    User* user;
+    user = getOrCreateUser(message_json["user"]);
 
     switch(message_json["type"].get<int>()) {
         case LOGIN_REQUEST: {
-            User* user;
-            user = getOrCreateUser(message_json["user"]);
-            if(newSession(user, sender_cli_addr)) {
+            if(user->login(sender_cli_addr)) {
                 MESSAGE message;
+
+                message.sender = user;
+                message.receiver = user;
                 message.payload = user->loginSuccessMessage();
-                message.direct_address = sender_cli_addr;
+
+                message.direct_response_address = sender_cli_addr;
                 message.direct_response = true;
+
                 messages.push_front(message);
+//
+//                message.payload = user->loginSuccessMessage();
+//                message.direct_response_address = sender_cli_addr;
+//                message.direct_response = true;
+//                messages.push_front(message);
             } else {
                 MESSAGE message;
-                message.payload = user->loginFail();
-                message.direct_address = sender_cli_addr;
+
+                message.sender = user;
+                message.receiver = user;
+                message.payload = user->loginFailMessage();
+
+                message.direct_response_address = sender_cli_addr;
                 message.direct_response = true;
+
                 messages.push_front(message);
+//
+//                message.payload = user->loginFailMessage();
+//                message.direct_response_address = sender_cli_addr;
+//                message.direct_response = true;
+//                messages.push_front(message);
             }
             break;
         }
+        case LOGOUT_REQUEST: {
+            user->logout(sender_cli_addr);
+            break;
+        }
         case NEW_MESSAGE: {
-            // TODO register message, user, timestamp, size, followers who will receive
-            // TODO send message to followers
-            // TODO check message mentions (not required)
 
-            json response_message_json;
-            response_message_json["type"] = NOTIFICATION;
-            response_message_json["message"] = "Message sent:" + message_json["message"].get<string>();
-            string flat_response_message = to_string(response_message_json);
+            list<User*> followers = user->getFollowers();
 
-            n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0,(struct sockaddr *) &sender_cli_addr, sizeof(struct sockaddr));
-            if (n  < 0)
-                logger.message(ERROR, "ERROR on sendto");
+            for (auto follower_it = followers.begin(); follower_it != followers.end(); ++follower_it) {
+//                User* follower = *follower_it;
+
+                MESSAGE message;
+
+                message.sender = user;
+                message.receiver = *follower_it;
+                message.payload = user->notificationMessage(message_json["message"].get<string>());
+
+                messages.push_front(message);
+            }
 
             break;
         }
         case FOLLOW_REQUEST: {
             // TODO register new follower in user
 
-            json response_message_json;
-            response_message_json["type"] = NOTIFICATION;
-            response_message_json["message"] = "You are now following the user: " + message_json["user_name"].get<string>();
-            string flat_response_message = to_string(response_message_json);
+            pair<bool, User*> user_to_follow = getUser(message_json["user_name"]);
 
-            n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0,(struct sockaddr *) &sender_cli_addr, sizeof(struct sockaddr));
-            if (n  < 0)
-                logger.message(ERROR, "ERROR on sendto");
+            if(user_to_follow.first){
+                user_to_follow.second->addFollower(user);
 
+                MESSAGE message;
+
+                message.sender = user;
+                message.receiver = user;
+                message.payload = user->followingSuccessMessage(user_to_follow.second->getName());
+
+                messages.push_front(message);
+            } else {
+                MESSAGE message;
+                message.sender = user;
+                message.receiver = user;
+                message.payload = user->followingFailMessage(message_json["user_name"]);
+
+                message.direct_response_address = sender_cli_addr;
+                message.direct_response = true;
+                messages.push_front(message);
+            }
             break;
         }
         default:{
@@ -138,29 +179,35 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
         }
     }
 
-
-
-
+    saveUsers();
     return messages;
 
 }
 
-User* ServerCommunicationManager::getOrCreateUser(string user_name) {
-
+pair<bool, User*> ServerCommunicationManager::getUser(const string& user_name) {
     for (auto it = this->users.begin(); it != this->users.end(); ++it) {
         int index = std::distance(users.begin(), it);
         if(it.operator*()->getName() == user_name) {
             logger.message(INFO, "User found [%s] active sessions [%d]", it.operator*()->getName().c_str(), it.operator*()->active_sessions_count());
-//            User user = it.operator*();
-            User* user = *it;
-            return user;
+
+            return {true, it.operator*()};
+        }
+    }
+    User* no_user = new User();
+    return {false, no_user};
+}
+
+User* ServerCommunicationManager::getOrCreateUser(const string& user_name) {
+
+    for (auto it = this->users.begin(); it != this->users.end(); ++it) {
+        if(it.operator*()->getName() == user_name) {
+            logger.message(INFO, "User found [%s] active sessions [%d]", it.operator*()->getName().c_str(), it.operator*()->active_sessions_count());
+            return it.operator*();
         }
     }
 
-
     User* user = new User(user_name);
     users.push_back(user);
-    saveUsers();
 
     logger.message(INFO, "New User [%s]", user->getName().c_str());
 
@@ -178,27 +225,33 @@ void ServerCommunicationManager::saveUsers() {
     ofstream file("users.json");
     file << jsonfile;
 }
-//
-//bool ServerCommunicationManager::updateUser(User user) {
-//    list<User>::iterator it;
-//
-//    for (it = begin (this->users); it != end (this->users); ++it) {
-//        int index = std::distance(users.begin(), it);
-//        if(it->getName() == user.getName()) {
-//            users.erase(it);
-//            users.push_back(user);
-//            logger.message(INFO, "User updaated [%s] active sessions [%d -> %d]", it->getName().c_str(), it->active_sessions_count(), user.active_sessions_count());
-//            return true;
-//        }
-//    }
-//    return false;
-//}
 
 bool ServerCommunicationManager::newSession(User* user, sockaddr_in cli_addr) {
-    bool success = user->newSession(cli_addr, sockfd);
+//    for (auto iter = user->active_sessions.begin(), end = user->active_sessions.end(); iter != end; ++iter) {
+//        if(!ping(*iter))
+//            iter = user->active_sessions.erase(iter);
+//    }
+
+    bool success = user->login(cli_addr);
     saveUsers();
     return success;
 }
+
+
+void ServerCommunicationManager::pingAll() {
+    for (auto user_iter = users.begin(), user_iter_end = users.end(); user_iter != user_iter_end; ++user_iter) {
+        User* user = *user_iter;
+        for (auto active_sessions_iter = user->active_sessions.begin(), active_sessions_iter_end = user->active_sessions.end(); active_sessions_iter != active_sessions_iter_end; ++active_sessions_iter) {
+            if(!ping(*active_sessions_iter)){
+                logger.message(INFO, "Ping on user [%s] without response.", user->getName().c_str());
+//                active_sessions_iter = user->active_sessions.erase(active_sessions_iter);
+                user->logout(active_sessions_iter->sockaddrIn());
+                break;
+            }
+        }
+    }
+}
+
 
 bool ServerCommunicationManager::ping(CLIENT_ADDRESS cli_addr){
     json response_message_json;
@@ -216,8 +269,9 @@ bool ServerCommunicationManager::ping(CLIENT_ADDRESS cli_addr){
 
     char* server_response_buffer = (char*) calloc(256, sizeof(char));
     n = recvfrom(sockfd, server_response_buffer, 256, 0, (struct sockaddr *) &cli_addr, &clilen);
-    if (n < 0)
+    if (n < 0) {
         return false;
+    }
 
     return true;
 }

@@ -9,6 +9,7 @@
 #define ERROR_CONNECTION_RECEIVE        15
 
 #define LOGIN_REQUEST               100
+#define LOGOUT_REQUEST              101
 #define LOGIN_RESPONSE_SUCCESS      110
 #define LOGIN_RESPONSE_ERROR        120
 

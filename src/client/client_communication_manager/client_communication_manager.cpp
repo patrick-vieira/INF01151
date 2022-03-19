@@ -7,10 +7,11 @@
 bool ClientCommunicationManager::login(string user_name) {
 
     this->session.openConnection();
+    logged_user_name = user_name;
 
     json message;
     message["type"] = LOGIN_REQUEST;
-    message["user"] = user_name;
+    message["user"] = logged_user_name;
 
     this->session.sendMessage(message);
 
@@ -18,9 +19,19 @@ bool ClientCommunicationManager::login(string user_name) {
     return true;
 }
 
+void ClientCommunicationManager::logout() {
+    json message;
+    message["type"] = LOGOUT_REQUEST;
+    message["user"] = logged_user_name;
+
+    this->session.sendMessage(message);
+    this->session.closeConnection();
+}
+
 bool ClientCommunicationManager::sendMessage(string user_input) {
     json message;
     message["type"] = NEW_MESSAGE;
+    message["user"] = logged_user_name;
     message["message"] = user_input;
 
     this->session.sendMessage(message);
@@ -31,6 +42,7 @@ bool ClientCommunicationManager::sendMessage(string user_input) {
 bool ClientCommunicationManager::followUser(string user_input) {
     json message;
     message["type"] = FOLLOW_REQUEST;
+    message["user"] = logged_user_name;
     message["user_name"] = user_input;
 
     this->session.sendMessage(message);
@@ -40,6 +52,7 @@ bool ClientCommunicationManager::followUser(string user_input) {
 bool ClientCommunicationManager::pingReply() {
     json message;
     message["type"] = PING;
+    message["user"] = logged_user_name;
 
     this->session.sendMessage(message);
     return false;
@@ -48,9 +61,5 @@ bool ClientCommunicationManager::pingReply() {
 json ClientCommunicationManager::notificationAvailable() {
     json response = session.receiveMessage();
     return response;
-}
-
-void ClientCommunicationManager::logout() {
-    this->session.closeConnection();
 }
 

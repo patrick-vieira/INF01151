@@ -21,6 +21,7 @@ class ClientCommunicationManager {
 
 private:
     Session session;
+    string logged_user_name;
 
 public:
     ClientCommunicationManager(Session session): session(session){

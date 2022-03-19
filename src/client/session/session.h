@@ -37,7 +37,7 @@ public:
     }
 
     bool openConnection();
-    json sendMessage(json message);
+    void sendMessage(json message);
     json receiveMessage();
     void closeConnection();
 

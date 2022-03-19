@@ -5,7 +5,7 @@
 #ifndef INF01151_TF_SERVER_H
 #define INF01151_TF_SERVER_H
 
-
+#include <sys/syscall.h>
 #include "../aux_shared/logger.h"
 #include "user/user.h"
 #include "server_thread_runner.h"
@@ -31,14 +31,11 @@ public:
 
 
 private:
-    void ProducerImplementation() override;
+    [[noreturn]] void ProducerImplementation() override;
     void ConsumerImplementation() override;
 
-    MESSAGE buffer[MAX_ITEMS];
-        /* nova conexão de usuario, se não existe cria,
-         * se já existe conecta, se já tem 2 conectados retorna mensagem de erro para o client
-         * */
-    bool newUserConnection(User user);
+    MESSAGE direct_messages_buffer[MAX_ITEMS];
+    map<User*, list<MESSAGE>> user_messages_buffer;
 
 
 };
@@ -46,7 +43,3 @@ private:
 
 #endif //INF01151_TF_SERVER_H
 
-/*
- * Maximo de duas conecções por usuario;
- * cuidar para ao desconectar uma não desconectar as duas
- */

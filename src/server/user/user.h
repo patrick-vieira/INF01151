@@ -22,6 +22,7 @@ typedef struct client_address {
     char ip[INET_ADDRSTRLEN];
     int port;
 
+
     struct sockaddr_in sockaddrIn(){
         struct sockaddr_in temp_address;
         // recreate socket address
@@ -43,36 +44,45 @@ class User {
     Logger logger;
 
     string name;
-    list<User> followers;
+    list<User*> followers;
 
-    list<CLIENT_ADDRESS> active_sessions;
+    pthread_t consumer_thread = 0;
+    bool consumer_thread_execute = false;
 
 public:
+    list<CLIENT_ADDRESS> active_sessions;
+
     User() {}
     User(string name);
-    User(string name, list<User> followers);
+    User(string name, list<User*> followers);
 
-    void addFollower(User newFollower);
+    list<User*> getFollowers();
 
+    void addFollower(User* newFollower);
     void sendMessage(string message);
 
-    string getName() {
-        return name;
-    }
+    string getName();
+    bool login(struct sockaddr_in address);
+    void logout(struct sockaddr_in address);
 
-    bool newSession(struct sockaddr_in address, int sockfd);
+    int active_sessions_count();
 
-    int active_sessions_count() {
-        return active_sessions.size();
-    }
+
+    json loginSuccessMessage();
+    json loginFailMessage();
+    json followingSuccessMessage(string user_name);
+    json followingFailMessage(string user_name);
+
+    json notificationMessage(string message);
+
+    list<CLIENT_ADDRESS> getActiveSessions();
+
+    bool connected();
 
     json asJson();
 
-    json loginSuccessMessage();
+    void setConsumerThread(pthread_t consumer_thread);
 
-    json loginFail();
-
-    list<CLIENT_ADDRESS> *getActiveSessions(int sockfd);
 private:
     bool ping(CLIENT_ADDRESS cli_addr, int sockfd);
 };

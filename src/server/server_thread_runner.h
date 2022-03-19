@@ -16,14 +16,14 @@ class ServerThreadRunner
 
 public:
     typedef struct {
-        int stop_lt;
-        bool args_load = false;
+//        bool direct_response_consumer = false;
+        User* user;
     } CONSUMER_ARGS;
 
     ServerThreadRunner() {
-        pthread_cond_init(&cond_empty, NULL);
-        pthread_cond_init(&cond_full, NULL);
+        pthread_cond_init(&cond_message_avaliable, NULL);
         pthread_mutex_init(&mutex, NULL);
+        pthread_mutex_init(&mutex_args, NULL);
     }
     virtual ~ServerThreadRunner() {/* empty */}
 
@@ -42,7 +42,6 @@ public:
     pthread_t StartConsumerThread(CONSUMER_ARGS stop_lt)
     {
         pthread_t _thread_consumer;
-        stop_lt.args_load = true;
         pthread_args_vec.push_back(stop_lt);
 
         string key  = pthreadAsString(_thread_consumer);
@@ -93,8 +92,8 @@ protected:
     virtual void ProducerImplementation() = 0;
     virtual void ConsumerImplementation() = 0;
 
-    pthread_cond_t 	cond_empty, cond_full;
-    pthread_mutex_t mutex;
+    pthread_cond_t 	cond_message_avaliable;
+    pthread_mutex_t mutex, mutex_args;
     int counter = 0, in = 0, out = 0;
 
     map<string , CONSUMER_ARGS> pthread_args_dict;

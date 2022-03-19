@@ -23,19 +23,19 @@ bool Session::openConnection() {
     serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
     bzero(&(serv_addr.sin_zero), 8);
 
-    struct timeval tv; // set recvfrom timeout
-    tv.tv_sec = 1;
-    tv.tv_usec = 100000;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
-        logger.message(ERROR, "ERROR on setting opt timeout");
-        exit(912);
-    }
+//    struct timeval tv; // set recvfrom timeout
+//    tv.tv_sec = 1;
+//    tv.tv_usec = 100000;
+//    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
+//        logger.message(ERROR, "ERROR on setting opt timeout");
+//        exit(912);
+//    }
 
     return true;
 }
 
 
-json Session::sendMessage(json message){
+void Session::sendMessage(json message){
 
     string plain_message = to_string(message);
 
@@ -43,7 +43,6 @@ json Session::sendMessage(json message){
     if (n < 0)
         logger.message(ERROR, "ERROR sendto");
 
-    return NULL;
 }
 
 json Session::receiveMessage(){

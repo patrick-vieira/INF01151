@@ -164,8 +164,9 @@ void UserGUI::refresh_main_window() {
     int y = 1;
     int x = 1;
 
-    wclear(this->main_win);
-    box(this->main_win, 0, 0);
+//    wclear(this->main_win);
+//    box(this->main_win, 0, 0);
+    this->createMainWindow(yMax, xMax);
 
     for (auto it = this->main_win_content.begin(); it != this->main_win_content.end(); ++it) {
         int index = std::distance(this->main_win_content.begin(), it);

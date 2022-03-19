@@ -22,11 +22,14 @@ using namespace std;
 using json = nlohmann::json;
 
 typedef struct {
-    User user_destination;
-    json payload;
+    User* sender;
+    User* receiver;
 
-    bool direct_response; // if true send to direct_address else to all user connections
-    struct sockaddr_in direct_address;
+    json payload;
+    time_t now = time(0);
+
+    bool direct_response = false; // if true send to direct_response_address else to all user connections
+    struct sockaddr_in direct_response_address;
 } MESSAGE;
 
 
@@ -50,12 +53,15 @@ public:
     bool messageSender(MESSAGE message);
     list<MESSAGE> messageReceiver();
 
-    User* getOrCreateUser(string user_name);
-    bool updateUser(User user);
+    User* getOrCreateUser(const string& user_name);
     void saveUsers();
 
     bool newSession(User* user, sockaddr_in cli_addr);
     bool ping(CLIENT_ADDRESS cli_addr);
+
+    pair<bool, User*> getUser(const string& user_name);
+
+    void pingAll();
 };
 
 

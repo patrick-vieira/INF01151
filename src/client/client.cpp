@@ -35,7 +35,7 @@ void Client::MessageSenderImplementation() {
 
     int selected = gui.select_menu(login_success);
 
-    while (selected < 0 || this->menu_choices[selected] != "Exit") {
+    while (running && selected < 0 || this->menu_choices[selected] != "Exit") {
         switch (selected) {
             case 0: {     // Write message
                 string user_input_message = "Say something: ";
@@ -47,8 +47,6 @@ void Client::MessageSenderImplementation() {
             case 1: {     // Follow User
                 string message = "User name to follow: ";
                 string user_input = gui.request_user_input(message);
-                //TODO Validar o tamanho maximo da mensagem 128;
-                //TODO send to server;
                 this->communicationManager.followUser(user_input);
                 break;
             }
@@ -73,12 +71,12 @@ void Client::MessageListennerImplementation() {
                 break;
             case LOGIN_RESPONSE_ERROR:
                 gui.main_window_add_line(notification["message"].get<string>());
+                gui.main_window_add_line("exiting in 5 seconds");
                 break;
             case NOTIFICATION:
                 gui.main_window_add_line(notification["message"].get<string>());
                 break;
             case PING:
-                gui.main_window_add_line(notification["message"].get<string>());
                 this->communicationManager.pingReply();
                 break;
             case NO_MESSAGE:
@@ -88,7 +86,7 @@ void Client::MessageListennerImplementation() {
                 break;
         }
         if (notification["type"] == LOGIN_RESPONSE_ERROR){
-            break;
+            running = false;
         }
     }
 }
