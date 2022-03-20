@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <thread>
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
@@ -16,6 +17,7 @@
 #include "../../aux_shared/message_types.h"
 #include "../../aux_shared/logger.h"
 #include "../user/user.h"
+#include "../persistence/serverMemory.h"
 
 using namespace std;
 
@@ -28,7 +30,7 @@ typedef struct {
     json payload;
     time_t now = time(0);
 
-    bool direct_response = false; // if true send to direct_response_address else to all user connections
+    bool direct_response = false; // if true send to direct_response_address with priority else send to all user sessions
     struct sockaddr_in direct_response_address;
 } MESSAGE;
 
@@ -43,25 +45,23 @@ private:
     socklen_t clilen;
     struct sockaddr_in serv_addr;
 
-    list<User*> users;
-
+    ServerPersistence* persistence;
 
 public:
+    ServerCommunicationManager(ServerPersistence* persistence);
     void openSocket(int port);
     void closeSocket();
 
     bool messageSender(MESSAGE message);
     list<MESSAGE> messageReceiver();
 
-    User* getOrCreateUser(const string& user_name);
-    void saveUsers();
-
-    bool newSession(User* user, sockaddr_in cli_addr);
-    bool ping(CLIENT_ADDRESS cli_addr);
-
-    pair<bool, User*> getUser(const string& user_name);
-
     void pingAll();
+
+private:
+    bool sendMessage(const MESSAGE &message);
+    bool sendDirectMessage(const MESSAGE &message);
+
+    bool ping(USER_SESSION cli_addr);
 };
 
 

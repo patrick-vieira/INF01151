@@ -20,24 +20,38 @@ class Server : ServerThreadRunner {
     int port;
     Logger logger;
 
+    ServerPersistence* persistence = new ServerPersistence("users.json", "messages.json");
     ServerCommunicationManager communicationManager;
 
 public:
-    Server(int port);
+    Server(int port) : communicationManager(persistence){
+        this->port = port;
+        this->initMessageBuffer();
+    }
 
-
-public:
     int start();
 
 
 private:
-    [[noreturn]] void ProducerImplementation() override;
-    void ConsumerImplementation() override;
-
     MESSAGE direct_messages_buffer[MAX_ITEMS];
     map<User*, list<MESSAGE>> user_messages_buffer;
 
+    [[noreturn]] void ProducerImplementation() override;
+    void ConsumerImplementation() override;
 
+    void initMessageBuffer() {
+        list < User * > users = persistence->getAllUsers();
+
+        for (auto user_iter = users.begin(), user_iter_end = users.end(); user_iter != user_iter_end; ++user_iter) {
+            User* user = *user_iter;
+            startUserThreadConsumer(user);
+
+            list<MESSAGE> user_messages;
+            user_messages_buffer.insert({user, user_messages});
+        }
+    }
+
+    void startUserThreadConsumer(User* user);
 };
 
 

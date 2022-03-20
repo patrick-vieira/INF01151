@@ -25,7 +25,7 @@ bool Session::openConnection() {
 
 //    struct timeval tv; // set recvfrom timeout
 //    tv.tv_sec = 1;
-//    tv.tv_usec = 100000;
+//    tv.tv_usec = 20000;
 //    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
 //        logger.message(ERROR, "ERROR on setting opt timeout");
 //        exit(912);

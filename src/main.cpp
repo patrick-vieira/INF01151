@@ -30,6 +30,7 @@ int main(int argc, char * argv[])
 
     if ( argsParser.isServer() ) {
 
+
         Server server(argsParser.getPort());
         server.start();
 

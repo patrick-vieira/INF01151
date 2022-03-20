@@ -8,16 +8,16 @@ User::User(string name) {
     this->name = name;
 }
 
-User::User(string name, list<User*> followers) {
+User::User(string name, list<string> followers_name, list<USER_SESSION> active_sessions) {
     this->name = name;
-    this->followers = followers;
+    this->followers_name = followers_name;
+    this->active_sessions = active_sessions;
 }
 
 bool User::login(struct sockaddr_in cli_addr) {
 
     if(active_sessions.size() < 2){
-        CLIENT_ADDRESS as;
-        as.fromSockaddrIn(cli_addr);
+        USER_SESSION as(cli_addr);
         active_sessions.push_back(as);
         return true;
     }
@@ -27,52 +27,59 @@ bool User::login(struct sockaddr_in cli_addr) {
 
 void User::logout(struct sockaddr_in cli_addr) {
 
-    CLIENT_ADDRESS as;
-    as.fromSockaddrIn(cli_addr);
+    USER_SESSION as(cli_addr);
 
     for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
         if(strcmp(as.ip, iter->ip) && as.port, iter->port) {
             iter = active_sessions.erase(iter);
+            pthread_cond_signal(&cond_message_avaliable);
         }
     }
-    consumer_thread_execute = !active_sessions.empty();
 }
 
-list<CLIENT_ADDRESS> User::getActiveSessions() {
-    // remove disconected users;
-//    for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
-//        if(!ping(*iter, sockfd))
-//            iter = active_sessions.erase(iter);
-//    }
+void User::pingResponse(struct sockaddr_in cli_addr) {
 
+    USER_SESSION as(cli_addr);
+
+    for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
+        if (strcmp(as.ip, iter->ip) && as.port, iter->port) {
+//            iter = active_sessions.erase(iter);
+//            active_sessions.insert(iter, as);
+            iter->setLastPingResponse();
+            break;
+        }
+    }
+}
+
+list<USER_SESSION> User::getActiveSessions() {
     return active_sessions;
 }
 
-// NOT WORK, reason: send ping works fine, the problem is with the response, its received before on the producer trhead..
-//bool User::ping(CLIENT_ADDRESS cli_addr, int sockfd){
-//    json response_message_json;
-//    response_message_json["type"] = PING;
-//    response_message_json["message"] = "[SERVER]: Ping";
-//    string flat_response_message = to_string(response_message_json);
-//
-//    sockaddr_in cli_addr_to_ping = cli_addr.sockaddrIn();
-//
-//    int n = sendto(sockfd, flat_response_message.c_str(), strlen(flat_response_message.c_str()), 0 ,(struct sockaddr *) &cli_addr_to_ping, sizeof(struct sockaddr));
-//    if (n  < 0) {
-//        logger.message(ERROR, "ERROR ping not send.");
-//        return false;
-//    }
-//
-//    char* ping_response_buffer = (char*) calloc(256, sizeof(char));
-//    socklen_t  socklen = sizeof(struct sockaddr_in);
-//    n = recvfrom(sockfd, ping_response_buffer, 256, 0, (struct sockaddr *) &cli_addr, &socklen);
-//    if (n < 0){
-//        logger.message(ERROR, "ERROR ping response not received.");
-//        return false;
-//    }
-//
-//    return true;
-//}
+void User::addFollower(User* newFollower) {
+    followers_name.push_back(newFollower->getName());
+}
+
+list<string> User::getFollowers() {
+    return followers_name;
+}
+
+bool User::isConnected() {
+    return !active_sessions.empty();
+}
+
+string User::getName()  {
+    return name;
+}
+
+int User::active_sessions_count()  {
+    return active_sessions.size();
+}
+
+void User::setConsumerThread(pthread_t consumer_thread) {
+    pthread_cond_init(&cond_message_avaliable, NULL);
+    this->consumer_thread = consumer_thread;
+    this->consumer_thread_running = true;
+}
 
 json User::loginSuccessMessage() {
     json response_message_json;
@@ -82,7 +89,6 @@ json User::loginSuccessMessage() {
 
     return response_message_json;
 }
-
 
 json User::loginFailMessage() {
     json response_message_json;
@@ -123,10 +129,10 @@ json User::notificationMessage(string message) {
 json User::asJson() {
     auto json_followers = json::array();
 
-    for (auto it = begin(this->followers); it != end(this->followers); ++it) {
-        int index = distance(followers.begin(), it);
-        User* follower = *it;
-        json_followers.push_back(follower->getName());
+    for (auto it = begin(this->followers_name); it != end(this->followers_name); ++it) {
+        json follower;
+        follower["follower"] = *it;
+        json_followers.push_back(follower);
     }
 
     auto json_active_sessions = json::array();
@@ -134,7 +140,8 @@ json User::asJson() {
     for (auto it = begin(this->active_sessions); it != end(this->active_sessions); ++it) {
         json json_address = {
                 {"ip",   it->ip},
-                {"port", it->port}
+                {"port", it->port},
+                {"last_ping_response", it->last_ping_response}
         };
         json_active_sessions.push_back(json_address);
     }
@@ -147,33 +154,4 @@ json User::asJson() {
 
     return json_user;
 }
-
-void User::addFollower(User* newFollower) {
-    followers.push_back(newFollower);
-}
-
-list<User *> User::getFollowers() {
-    return followers;
-}
-
-bool User::connected() {
-    return consumer_thread_execute;
-}
-
-string User::getName()  {
-    return name;
-}
-
-int User::active_sessions_count()  {
-    return active_sessions.size();
-}
-
-void User::setConsumerThread(pthread_t consumer_thread) {
-    pthread_cond_init(&cond_message_avaliable, NULL);
-    this->consumer_thread = consumer_thread;
-    this->consumer_thread_execute = true;
-}
-
-
-
 

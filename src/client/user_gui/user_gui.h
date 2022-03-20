@@ -7,7 +7,7 @@
 
 #include <ncurses.h>
 #include <string>
-#include <vector>
+#include <list>
 #include <curses.h>
 
 using namespace std;
@@ -21,7 +21,7 @@ private:
 
     int menu_selected = 0;
 
-    vector<string> main_win_content;
+    list<string> main_win_content;
     WINDOW* main_win;
     int main_win_lines = 12;
 

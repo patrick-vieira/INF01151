@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <map>
 #include <sstream>
+#include <thread>
 
 using namespace std;
 
@@ -16,18 +17,16 @@ class ServerThreadRunner
 
 public:
     typedef struct {
-//        bool direct_response_consumer = false;
         User* user;
     } CONSUMER_ARGS;
 
     ServerThreadRunner() {
-//        pthread_cond_init(&cond_message_avaliable, NULL);
+        pthread_cond_init(&cond_consumer_args_available, NULL); // this condintion
         pthread_mutex_init(&mutex, NULL);
         pthread_mutex_init(&mutex_args, NULL);
     }
     virtual ~ServerThreadRunner() {/* empty */}
 
-    /** Returns true if the thread was successfully started, false if there was an error starting the thread */
     pthread_t StartProducerThread()
     {
         pthread_t _thread_producer;
@@ -38,16 +37,14 @@ public:
         else
             exit(99);
     }
-    /** Returns true if the thread was successfully started, false if there was an error starting the thread */
-    pthread_t StartConsumerThread(CONSUMER_ARGS stop_lt)
+
+    pthread_t StartConsumerThread(CONSUMER_ARGS* consumerArgs)
     {
         pthread_t _thread_consumer;
-        pthread_args_vec.push_back(stop_lt);
-
-        string key  = pthreadAsString(_thread_consumer);
-        pthread_args_dict.insert(pair<string, CONSUMER_ARGS>(key, stop_lt));
 
         bool success = (pthread_create(&_thread_consumer, NULL, ConsumerEntryFunc, this) == 0);
+        pthread_args_dict.insert(pair<pthread_t, CONSUMER_ARGS*>(_thread_consumer, consumerArgs));
+        pthread_cond_signal(&cond_consumer_args_available);
 
         if (success)
             return _thread_consumer;
@@ -67,23 +64,9 @@ public:
     }
 
 
-    template <class T> inline //required to pass pthread pointer as parameter on diferent systems
-    std::string pthreadAsString(const T& t) {
-        std::stringstream ss;
-        ss << t;
-        return ss.str();
-    }
-
-    // it doesn't work but it should
-    CONSUMER_ARGS getThreadArgs(string sid){
-//        thread::id tid = this_thread::get_id();
-//        string stid = pthreadAsString(tid);
-//
-//        std::stringstream ss;
-//        ss << std::this_thread::get_id();
-
-        CONSUMER_ARGS a2 = pthread_args_dict.find(sid)->second;
-        return a2;
+    CONSUMER_ARGS* getThreadArgs(unsigned long sid){
+        CONSUMER_ARGS* args = pthread_args_dict.find(sid)->second;
+        return args;
     }
 
 
@@ -92,23 +75,15 @@ protected:
     virtual void ProducerImplementation() = 0;
     virtual void ConsumerImplementation() = 0;
 
-//    pthread_cond_t 	cond_message_avaliable;
-    pthread_mutex_t mutex, mutex_args;
-    int counter = 0, in = 0, out = 0;
+    pthread_cond_t 	cond_consumer_args_available{};
+    pthread_mutex_t mutex{}, mutex_args{};
 
-    map<string , CONSUMER_ARGS> pthread_args_dict;
-    std::vector<CONSUMER_ARGS> pthread_args_vec;
+    map<unsigned long , CONSUMER_ARGS*> pthread_args_dict;
 
 
 private:
     static void * ProducerEntryFunc(void * This) {((ServerThreadRunner *)This)->ProducerImplementation(); return NULL;}
     static void * ConsumerEntryFunc(void * This) {((ServerThreadRunner *)This)->ConsumerImplementation(); return NULL;}
-
-
-//    pthread_t _thread_producer;
-//    pthread_t _thread_consumer;
-
-
 
 
 };

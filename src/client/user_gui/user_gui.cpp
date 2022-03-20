@@ -154,8 +154,8 @@ string UserGUI::request_user_input(string message) {
 void UserGUI::main_window_add_line(string new_line) {
 
     this->main_win_content.push_back(new_line);
-    if(this->main_win_content.size() > this->main_win_lines)
-        this->main_win_content.pop_back();
+    if(this->main_win_content.size() > this->main_win_lines - 2)
+        this->main_win_content.pop_front();
 
     this->refresh_main_window();
 }

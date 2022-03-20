@@ -27,6 +27,8 @@ int Client::start() {
 }
 
 bool Client::validateUser() {
+    if(this->user.size() > 20 || this->user.size() <  4)
+        exit(-1);
     return false;
 }
 
@@ -40,6 +42,11 @@ void Client::MessageSenderImplementation() {
             case 0: {     // Write message
                 string user_input_message = "Say something: ";
                 string user_input = gui.request_user_input(user_input_message);
+
+                if(user_input.size() > 200) {
+                    gui.main_window_add_line("Message size exceed 200 characters - message size: " + to_string(user_input.size()));
+                    break;
+                }
 
                 this->communicationManager.sendMessage(user_input);
                 break;
@@ -68,10 +75,12 @@ void Client::MessageListennerImplementation() {
             case LOGIN_RESPONSE_SUCCESS:
                 gui.main_window_add_line(notification["message"].get<string>());
                 login_success = true;
+                sleep(1);
                 break;
             case LOGIN_RESPONSE_ERROR:
                 gui.main_window_add_line(notification["message"].get<string>());
                 gui.main_window_add_line("exiting in 5 seconds");
+                running = false;
                 break;
             case NOTIFICATION:
                 gui.main_window_add_line(notification["message"].get<string>());
@@ -84,9 +93,6 @@ void Client::MessageListennerImplementation() {
             default:
                 gui.main_window_add_line("Unknown message from server: " + to_string(notification));
                 break;
-        }
-        if (notification["type"] == LOGIN_RESPONSE_ERROR){
-            running = false;
         }
     }
 }

@@ -5,8 +5,6 @@
 #ifndef INF01151_TF_MESSAGE_TYPES_H
 #define INF01151_TF_MESSAGE_TYPES_H
 
-#define ERROR_CONNECTION_SEND           10
-#define ERROR_CONNECTION_RECEIVE        15
 
 #define LOGIN_REQUEST               100
 #define LOGOUT_REQUEST              101
@@ -19,5 +17,6 @@
 #define FOLLOW_REQUEST              250
 #define NOTIFICATION                300
 #define PING                        400
+#define PING_RESPONSE               401
 
 #endif //INF01151_TF_MESSAGE_TYPES_H

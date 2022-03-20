@@ -51,7 +51,7 @@ bool ClientCommunicationManager::followUser(string user_input) {
 
 bool ClientCommunicationManager::pingReply() {
     json message;
-    message["type"] = PING;
+    message["type"] = PING_RESPONSE;
     message["user"] = logged_user_name;
 
     this->session.sendMessage(message);
