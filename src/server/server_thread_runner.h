@@ -21,9 +21,8 @@ public:
     } CONSUMER_ARGS;
 
     ServerThreadRunner() {
-        pthread_cond_init(&cond_consumer_args_available, NULL); // this condintion
         pthread_mutex_init(&mutex, NULL);
-        pthread_mutex_init(&mutex_args, NULL);
+        pthread_mutex_init(&mutex_consumer_starting, NULL);
     }
     virtual ~ServerThreadRunner() {/* empty */}
 
@@ -48,9 +47,11 @@ public:
     pthread_t StartConsumerThread(CONSUMER_ARGS* consumerArgs) {
         pthread_t _thread_consumer;
 
+
+        pthread_mutex_lock(&mutex_consumer_starting);
         bool success = (pthread_create(&_thread_consumer, NULL, ConsumerEntryFunc, this) == 0);
-        pthread_args_dict.insert(pair<pthread_t, CONSUMER_ARGS*>(_thread_consumer, consumerArgs));
-        pthread_cond_signal(&cond_consumer_args_available);
+        pthread_args_dict.insert(pair<pthread_t, CONSUMER_ARGS*>(_thread_consumer, consumerArgs));//
+        pthread_mutex_unlock(&mutex_consumer_starting);
 
         if (success)
             return _thread_consumer;
@@ -91,8 +92,7 @@ protected:
     virtual void ConsumerImplementation() = 0;
     virtual void PingImplementation() = 0;
 
-    pthread_cond_t 	cond_consumer_args_available{};
-    pthread_mutex_t mutex{}, mutex_args{};
+    pthread_mutex_t mutex{}, mutex_consumer_starting{};
 
     map<unsigned long , CONSUMER_ARGS*> pthread_args_dict;
 

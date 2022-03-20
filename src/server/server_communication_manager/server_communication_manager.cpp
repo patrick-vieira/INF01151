@@ -93,7 +93,7 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
     }
     json message_json = json::parse(message_buffer);
 
-//    if(message_json["type"].get<int>() != PING_RESPONSE) // supress ping response log spam
+    if(message_json["type"].get<int>() != PING_RESPONSE) // supress ping response log spam
         logger.message(INFO, "[Message Receiver]: New message received: %s\n", to_string(message_json).c_str());
 
     User* user;
@@ -217,18 +217,10 @@ bool ServerCommunicationManager::ping(USER_SESSION cli_addr){
     time_t now = time(0);
     double diff = difftime(now,cli_addr.last_ping_response);
     bool time_out = diff > 5; // 5 seconds timeout
-    logger.message(ERROR, "PING DIFF %0.2lf", diff);
+    logger.message(DEBUG, "PING DIFF %0.2lf", diff);
     if(time_out)
         return false;
 
-//    // TODO remove this receiver, reason, can receive other messages instead of ping response
-//    // adicionar um tempo na USER_SESSION, se maior que 5s return false
-//    // na resposta do ping no producer colocar valor para now()
-//    char* server_response_buffer = (char*) calloc(256, sizeof(char));
-//    n = recvfrom(sockfd, server_response_buffer, 256, 0, (struct sockaddr *) &sockaddrIn, &clilen);
-//    if (n < 0) {
-//        return false;
-//    }
 
     return true;
 }

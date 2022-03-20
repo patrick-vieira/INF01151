@@ -67,13 +67,13 @@ int Server::start() {
 
 void Server::ConsumerImplementation() {
 
-    pthread_mutex_lock(&mutex_args);
-    pthread_cond_wait(&cond_consumer_args_available, &mutex_args);
+    pthread_mutex_lock(&mutex_consumer_starting);
 
     const CONSUMER_ARGS* t_parameters;
     t_parameters = getThreadArgs(pthread_self());
 
-    pthread_mutex_unlock(&mutex_args);
+    pthread_mutex_unlock(&mutex_consumer_starting);
+
     logger.message(INFO, "--NEW CONSUMMER THREAD STARTED - User consumer [%s]", t_parameters->user->getName().c_str());
 
 

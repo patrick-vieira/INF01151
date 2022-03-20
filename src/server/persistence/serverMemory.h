@@ -30,7 +30,7 @@ public:
 
     void saveUsers();
     void saveUser(User* user){  //TODO or not ;)
-        logger.message(INFO, "[PERSISTENCE] USER: %s SAVED", user->getName().c_str());
+        logger.message(INFO, "[PERSISTENCE] USER: %s SAVED\n", user->getName().c_str());
         this->saveUsers();
     }
 
