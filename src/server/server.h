@@ -38,6 +38,7 @@ private:
 
     [[noreturn]] void ProducerImplementation() override;
     void ConsumerImplementation() override;
+    [[noreturn]] void PingImplementation() override;
 
     void initMessageBuffer() {
         list < User * > users = persistence->getAllUsers();

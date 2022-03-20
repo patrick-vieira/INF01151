@@ -110,7 +110,7 @@ list<USER_SESSION> ServerPersistence::jsonParserCA(json obj){
         char ip[INET_ADDRSTRLEN];
         string ips;
         int port;
-        time_t last_ping_response;
+        long last_ping_response;
 
         for (auto& [key, val] : array_sessions_it.items()) {
             logger.message(DEBUG, "Reading users.json connection key: %s value: %s", key.c_str(), to_string(val).c_str());
@@ -124,9 +124,9 @@ list<USER_SESSION> ServerPersistence::jsonParserCA(json obj){
 
             }
             if(key == "port")
-                port = val;
+                port = val.get<int>();
             if(key == "last_ping_response")
-                last_ping_response = val;
+                last_ping_response = val.get<long>();
         }
 
         USER_SESSION clientAddress(ip, port, last_ping_response);

@@ -30,7 +30,7 @@ void User::logout(struct sockaddr_in cli_addr) {
     USER_SESSION as(cli_addr);
 
     for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
-        if(strcmp(as.ip, iter->ip) && as.port, iter->port) {
+        if(strcmp(as.ip, iter->ip) == 0 && as.port == iter->port) {
             iter = active_sessions.erase(iter);
             pthread_cond_signal(&cond_message_avaliable);
         }
@@ -42,7 +42,7 @@ void User::pingResponse(struct sockaddr_in cli_addr) {
     USER_SESSION as(cli_addr);
 
     for (auto iter = active_sessions.begin(), end = active_sessions.end(); iter != end; ++iter) {
-        if (strcmp(as.ip, iter->ip) && as.port, iter->port) {
+        if (strcmp(as.ip, iter->ip) == 0 && as.port == iter->port) {
 //            iter = active_sessions.erase(iter);
 //            active_sessions.insert(iter, as);
             iter->setLastPingResponse();

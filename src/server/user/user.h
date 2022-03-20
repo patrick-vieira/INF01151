@@ -23,11 +23,11 @@ typedef struct client_address {
     char ip[INET_ADDRSTRLEN];
     int port;
 
-    time_t last_ping_response;
+    time_t last_ping_response = time(0);
 
     client_address(){};
 
-    client_address(const char *ip, int port, time_t last_ping_response) {
+    client_address(const char *ip, int port, long last_ping_response) {
         strncpy(this->ip, ip,INET_ADDRSTRLEN);
         this->port = port;
         this->last_ping_response = last_ping_response;

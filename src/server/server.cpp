@@ -13,12 +13,20 @@ int Server::start() {
     communicationManager.openSocket(port);
 
     pthread_t producer = this->StartProducerThread();
+    pthread_t ping = this->StartPingThread();
 
     WaitForProducerToExit(producer);
 
     communicationManager.closeSocket();
 
     return 0;
+}
+
+[[noreturn]] void Server::PingImplementation() {
+    while (TRUE) {
+        communicationManager.pingAll();
+        sleep(2);
+    }
 }
 
 [[noreturn]] void Server::ProducerImplementation() {
@@ -28,11 +36,6 @@ int Server::start() {
     while (TRUE) {
 
         list<MESSAGE> new_messages = communicationManager.messageReceiver();
-        if(new_messages.empty()){
-            communicationManager.pingAll();
-            continue;
-        }
-
 
         for (auto received_message_it = begin (new_messages); received_message_it != end (new_messages); ++received_message_it) {
             startUserThreadConsumer(received_message_it->sender);

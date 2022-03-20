@@ -93,7 +93,7 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
     }
     json message_json = json::parse(message_buffer);
 
-    if(message_json["type"].get<int>() != PING_RESPONSE) // supress ping response log spam
+//    if(message_json["type"].get<int>() != PING_RESPONSE) // supress ping response log spam
         logger.message(INFO, "[Message Receiver]: New message received: %s\n", to_string(message_json).c_str());
 
     User* user;
@@ -192,11 +192,9 @@ void ServerCommunicationManager::pingAll() {
 
         for (auto active_sessions_iter = active_sessions.begin(), active_sessions_iter_end = active_sessions.end(); active_sessions_iter != active_sessions_iter_end; ++active_sessions_iter) {
             if(!ping(*active_sessions_iter)){
-                string ip = string(active_sessions_iter->ip);
                 logger.message(INFO, "Ping on user [%s] ip: %s:%d without response.", user->getName().c_str(), active_sessions_iter->ip, active_sessions_iter->port);
                 user->logout(active_sessions_iter->sockaddrIn());
                 persistence->saveUser(user);
-                break;
             }
         }
     }
@@ -218,7 +216,8 @@ bool ServerCommunicationManager::ping(USER_SESSION cli_addr){
 
     time_t now = time(0);
     double diff = difftime(now,cli_addr.last_ping_response);
-    bool time_out = diff > 3; // 3 seconds timeout
+    bool time_out = diff > 5; // 5 seconds timeout
+    logger.message(ERROR, "PING DIFF %0.2lf", diff);
     if(time_out)
         return false;
 

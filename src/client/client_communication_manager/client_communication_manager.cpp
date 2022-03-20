@@ -53,6 +53,7 @@ bool ClientCommunicationManager::pingReply() {
     json message;
     message["type"] = PING_RESPONSE;
     message["user"] = logged_user_name;
+    message["message"] = "ping response";
 
     this->session.sendMessage(message);
     return false;
