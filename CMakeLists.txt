@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(INF01151_TF)
+project(INF01151)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -9,7 +9,7 @@ add_subdirectory(src/lib/nlohmann_json)
 
 
 add_executable(
-        INF01151_TF
+        ${PROJECT_NAME}
         src/main.cpp
 
         src/aux_shared/message_types.h
