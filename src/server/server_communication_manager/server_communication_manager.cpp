@@ -7,8 +7,9 @@
 using json = nlohmann::json;
 
 
-ServerCommunicationManager::ServerCommunicationManager(ServerPersistence* persistence) {
+ServerCommunicationManager::ServerCommunicationManager(ServerPersistence* persistence, ReplicaManager* replicaManager) {
     this->persistence = persistence;
+    this->replicaManager = replicaManager;
 }
 
 void ServerCommunicationManager::openSocket(int port) {
@@ -28,7 +29,7 @@ void ServerCommunicationManager::openSocket(int port) {
 
     struct timeval tv; // set recvfrom timeout
     tv.tv_sec = 1;
-    tv.tv_usec = 20000;
+    tv.tv_usec = 10000;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,&tv,sizeof(tv)) < 0) {
         logger.message(ERROR, "ERROR on setting opt timeout");
         exit(912);
@@ -93,11 +94,15 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
     }
     json message_json = json::parse(message_buffer);
 
-    if(message_json["type"].get<int>() != PING_RESPONSE) // supress ping response log spam
+    if(message_json["type"].get<int>() <= PING) // supress ping response log spam
         logger.message(INFO, "[Message Receiver]: New message received: %s\n", to_string(message_json).c_str());
 
-    User* user;
-    user = persistence->getOrCreateUser(message_json["user"]);
+
+    User *user;
+
+    if(message_json["type"].get<int>() != PING_RM) // SE mensagem de ping RM ignora o usuario
+        user = persistence->getOrCreateUser(message_json["user"]);
+
 
     switch(message_json["type"].get<int>()) {
         case LOGIN_REQUEST: {
@@ -170,6 +175,23 @@ list<MESSAGE> ServerCommunicationManager::messageReceiver() {
             user->pingResponse(sender_cli_addr);
             break;
         }
+        case PING_RM: {
+            REPLICA replica = this->replicaManager->create_replica(sender_cli_addr);
+
+            MESSAGE message;
+
+            json payload;
+            payload["type"] = PING_RM_RESPONSE;
+            payload["replicas"] = this->replicaManager->get_replicas_as_json();
+            payload["priority"] = replica.priority;
+
+            message.payload = payload;
+            message.direct_response_address = sender_cli_addr;
+            message.direct_response = true;
+
+            sendDirectMessage(message);
+            break;
+        }
         default:{
             logger.message(ERROR, "Message type not recognized %s", to_string(message_json).c_str());
             break;
@@ -216,7 +238,7 @@ bool ServerCommunicationManager::ping(USER_SESSION cli_addr){
 
     time_t now = time(0);
     double diff = difftime(now,cli_addr.last_ping_response);
-    bool time_out = diff > 5; // 5 seconds timeout
+    bool time_out = diff > 50;
     logger.message(DEBUG, "PING DIFF %0.2lf", diff);
     if(time_out)
         return false;

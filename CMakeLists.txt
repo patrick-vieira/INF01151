@@ -33,8 +33,8 @@ add_executable(
         src/client/user_gui/user_gui.cpp
         src/client/user_gui/user_gui.h
 
-        src/client/session/session.cpp
-        src/client/session/session.h
+        src/aux_shared/session/session.cpp
+        src/aux_shared/session/session.h
 
         src/client/client_communication_manager/client_communication_manager.cpp
         src/client/client_communication_manager/client_communication_manager.h
@@ -48,7 +48,9 @@ add_executable(
 
         src/client/client_thread_runner.h
         src/server/server_thread_runner.h
-)
+        src/server/replica_manager/replica_manager.cpp
+        src/server/replica_manager/replica_manager.h
+        src/server/replica_manager/replica_thread_runner.h)
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json ncurses pthread)

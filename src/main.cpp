@@ -6,6 +6,7 @@
 #include "aux_shared/args_parser.h"
 #include "client/client.h"
 #include "aux_shared/logger.h"
+#include "server/replica_manager/replica_manager.h"
 
 using namespace std;
 
@@ -30,8 +31,12 @@ int main(int argc, char * argv[])
 
     if ( argsParser.isServer() ) {
 
+        ReplicaManager replicaManager("localhost", argsParser.getPort());
 
-        Server server(argsParser.getPort());
+        while (!replicaManager.is_primary())
+            sleep(2);
+
+        Server server(argsParser.getPort(), &replicaManager);
         server.start();
 
     } else if ( argsParser.isClient() ) {

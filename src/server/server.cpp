@@ -115,6 +115,10 @@ void Server::ConsumerImplementation() {
 
 }
 
+void Server::ReplicationManagerImplementation() {
+
+}
+
 void Server::startUserThreadConsumer(User* user) {
     if(!user->isConsumerThreadRunning() && user->isConnected()) {
         // if user who send message has no consumer, create one.

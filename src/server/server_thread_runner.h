@@ -75,8 +75,22 @@ public:
             exit(99);
     }
 
-    void WaitForPingToExit(pthread_t _thread_consumer) {
-        (void) pthread_join(_thread_consumer, NULL);
+    void WaitForPingToExit(pthread_t _thread_ping) {
+        (void) pthread_join(_thread_ping, NULL);
+    }
+
+    pthread_t ReplicationManagerThread() {
+        pthread_t _thread_rm;
+
+        bool success = (pthread_create(&_thread_rm, NULL, ReplicationManagerEntryFunc, this) == 0);
+        if (success)
+            return _thread_rm;
+        else
+            exit(99);
+    }
+
+    void ReplicationManagerToExit(pthread_t _thread_rm) {
+        (void) pthread_join(_thread_rm, NULL);
     }
 
 
@@ -91,17 +105,18 @@ protected:
     virtual void ProducerImplementation() = 0;
     virtual void ConsumerImplementation() = 0;
     virtual void PingImplementation() = 0;
+    virtual void ReplicationManagerImplementation() = 0;
 
     pthread_mutex_t mutex{}, mutex_consumer_starting{};
 
     map<unsigned long , CONSUMER_ARGS*> pthread_args_dict;
 
-    pthread_t _thread_ping;
 
 private:
     static void * ProducerEntryFunc(void * This) {((ServerThreadRunner *)This)->ProducerImplementation(); return NULL;}
     static void * ConsumerEntryFunc(void * This) {((ServerThreadRunner *)This)->ConsumerImplementation(); return NULL;}
     static void * PingEntryFunc(void * This) {((ServerThreadRunner *)This)->PingImplementation(); return NULL;}
+    static void * ReplicationManagerEntryFunc(void * This) {((ServerThreadRunner *)This)->ReplicationManagerImplementation(); return NULL;}
 
 
 };

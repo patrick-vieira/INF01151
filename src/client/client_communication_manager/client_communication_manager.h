@@ -8,7 +8,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-#include "../session/session.h"
+#include "../../aux_shared/session/session.h"
 #include "../../aux_shared/message_types.h"
 
 

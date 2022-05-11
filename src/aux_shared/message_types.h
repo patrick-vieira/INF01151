@@ -16,7 +16,18 @@
 #define NO_MESSAGE                  201
 #define FOLLOW_REQUEST              250
 #define NOTIFICATION                300
-#define PING                        400
-#define PING_RESPONSE               401
+
+#define ELECTION                     500
+#define ELECTION_RESPONSE            501
+#define ELECTION_RESULT              502
+
+
+#define ERROR_NOT_ALLOWED           900
+
+#define PING                        1400
+#define PING_RESPONSE               1401
+
+#define PING_RM                     1600
+#define PING_RM_RESPONSE            1601
 
 #endif //INF01151_TF_MESSAGE_TYPES_H

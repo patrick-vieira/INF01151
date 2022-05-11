@@ -56,7 +56,8 @@ list<USER_SESSION> User::getActiveSessions() {
 }
 
 void User::addFollower(User* newFollower) {
-    followers_name.push_back(newFollower->getName());
+    if (!(find(std::begin(followers_name), std::end(followers_name), newFollower->getName()) != std::end(followers_name)))
+        followers_name.push_back(newFollower->getName());
 }
 
 list<string> User::getFollowers() {

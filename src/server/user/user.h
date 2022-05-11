@@ -10,48 +10,38 @@
 #include <string>
 #include <netinet/in.h>
 #include <nlohmann/json.hpp>
-#include <arpa/inet.h>
 #include "../../aux_shared/message_types.h"
 #include "../../aux_shared/logger.h"
+#include "../../aux_shared/session/session.h"
 
 using namespace std;
 
 using json = nlohmann::json;
 
-typedef struct client_address {
 
-    char ip[INET_ADDRSTRLEN];
-    int port;
+typedef struct user_session : client_address {
 
     time_t last_ping_response = time(0);
 
-    client_address(){};
+    user_session(){};
 
-    client_address(const char *ip, int port, long last_ping_response) {
+    user_session(const char *ip, int port, long last_ping_response) {
         strncpy(this->ip, ip,INET_ADDRSTRLEN);
         this->port = port;
         this->last_ping_response = last_ping_response;
     }
 
-    client_address(struct sockaddr_in cli_addr){
+    user_session(struct sockaddr_in cli_addr){
         inet_ntop(AF_INET, &(cli_addr.sin_addr), this->ip, INET_ADDRSTRLEN);
         this->port = htons(cli_addr.sin_port);
     };
-
-    struct sockaddr_in sockaddrIn(){
-        struct sockaddr_in temp_address;
-        // recreate socket address
-        inet_pton(AF_INET, ip, &(temp_address.sin_addr));
-        temp_address.sin_port = htons(port);
-        temp_address.sin_family = AF_INET;
-        return temp_address;
-    }
 
     void setLastPingResponse(){
         last_ping_response = time(0);
     }
 
 } USER_SESSION;
+
 
 class User {
     Logger logger;

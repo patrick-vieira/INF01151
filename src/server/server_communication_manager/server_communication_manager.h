@@ -18,6 +18,7 @@
 #include "../../aux_shared/logger.h"
 #include "../user/user.h"
 #include "../persistence/serverMemory.h"
+#include "../replica_manager/replica_manager.h"
 
 using namespace std;
 
@@ -46,9 +47,10 @@ private:
     struct sockaddr_in serv_addr;
 
     ServerPersistence* persistence;
+    ReplicaManager* replicaManager;
 
 public:
-    ServerCommunicationManager(ServerPersistence* persistence);
+    ServerCommunicationManager(ServerPersistence* persistence, ReplicaManager* replicaManager);
     void openSocket(int port);
     void closeSocket();
 

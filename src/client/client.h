@@ -7,7 +7,7 @@
 
 
 #include "../aux_shared/logger.h"
-#include "session/session.h"
+#include "../aux_shared/session/session.h"
 #include "user_gui/user_gui.h"
 #include "client_communication_manager/client_communication_manager.h"
 
